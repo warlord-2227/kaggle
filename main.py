@@ -22,6 +22,9 @@ Other disciplines, each a failure measured first:
     so premium goods take the earliest slots.
   * CARE daily: a cared cow yields 3 milk per 2 days instead of 1.
 """
+
+import math
+
 SHED = (4, 4)
 QO = {"NW": (0, 0), "NE": (5, 0), "SW": (0, 5), "SE": (5, 5)}
 ANIMAL = {"COW": ("PASTURE", "BUILD_PASTURE", "MILK"),
@@ -217,8 +220,8 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
     return agent
 
 
-_impl = make(target={"COW": 8, "SHEEP": 5}, feed_float_days=8, hands=8,
-             land=2, buy_feed=True)
+# --- generated entry point -------------------------------------------------
+_impl = make(target={'COW': 8, 'SHEEP': 5}, feed_float_days=8, hands=8, land=2, buy_feed=True)
 
 
 def agent(obs, config=None):

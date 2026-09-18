@@ -1,11 +1,14 @@
 """Benchmark ONLY. The tier 6-9 agents embed an unlicensed meta trace; we use
 them here as sparring partners to size the gap, and never submit them."""
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+ROOT = str(pathlib.Path(__file__).resolve().parents[1]) + "/"
 import statistics as st
 from concurrent.futures import ProcessPoolExecutor
 from kaggle_environments import make as mk
-from ranch import make as ranch
-from crop import make as crop
-REF="refagents/"
+from kaggriculture.agents.ranch import make as ranch
+from kaggriculture.agents.crop import make as crop
+REF = ROOT + "refagents/"
 META=["broker_bea","ledger_lena","slotter_silas","closer_cleo"]
 R=lambda: ranch(target={"COW":8,"SHEEP":5},feed_float_days=8)
 C=lambda: crop(hands=6,melon_share=0.40,wheat_share=0.30,sell_per_turn=6,adapt=True)

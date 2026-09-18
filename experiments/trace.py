@@ -1,7 +1,9 @@
 """Trace money day-by-day for a head-to-head game, to show what win/loss looks like."""
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import sys
 from kaggle_environments import make
-from probe import goose_agent, wheat_agent
+from experiments.probe import goose_agent, wheat_agent
 
 def trace(a, b, label, seed=7):
     env = make("kaggriculture", configuration={"episodeSteps": 720, "seed": seed})

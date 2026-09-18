@@ -1,8 +1,11 @@
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+ROOT = str(pathlib.Path(__file__).resolve().parents[1]) + "/"
 import statistics as st
 from concurrent.futures import ProcessPoolExecutor
 from kaggle_environments import make as mk
-from crop import make
-REF="refagents/"
+from kaggriculture.agents.crop import make
+REF = ROOT + "refagents/"
 OPPS=["melon_mateo","rancher_rita","homestead_hana"]
 def job(a):
     cfg,opp,seed,side=a

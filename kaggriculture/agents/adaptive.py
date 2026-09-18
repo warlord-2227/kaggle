@@ -12,8 +12,8 @@ The opponent's build-out is visible, and readable by day 1:
 So: hold all investment on day 0, read their pen count on day 1, then commit to
 the opposite market and never revisit the decision.
 """
-from ranch import make as _ranch
-from crop import make as _crop
+from .ranch import make as _ranch
+from .crop import make as _crop
 
 _STATE = {"mode": None, "last_step": -1}
 

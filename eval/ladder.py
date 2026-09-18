@@ -1,13 +1,16 @@
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+ROOT = str(pathlib.Path(__file__).resolve().parents[1]) + "/"
 import statistics as st, sys
 from concurrent.futures import ProcessPoolExecutor
 from kaggle_environments import make as mk
-REF="refagents/"
+REF = ROOT + "refagents/"
 TIERS=[("fallow_finn",0),("wheat_walter",1),("rotation_rosa",2),
        ("homestead_hana",3),("melon_mateo",4),("rancher_rita",5)]
 def job(a):
     opp,seed,side=a
     env=mk("kaggriculture",configuration={"episodeSteps":720,"seed":seed})
-    p=[ "main.py", REF+opp+".py"]
+    p=[ ROOT + "main.py", REF+opp+".py"]
     if side: p=p[::-1]
     env.run(p)
     r=env.steps[-1]

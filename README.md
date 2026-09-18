@@ -25,19 +25,44 @@ kaggle datasets download raykkretzschmar/kaggriculture-reference-agents \
 
 ## Layout
 
-| File | Purpose |
-| --- | --- |
-| `main.py` | Current submission |
-| `ranch.py` | Livestock farm (parameterised) |
-| `crop.py` | Melon/wheat/carrot farm |
-| `farm.py` | Earlier goose+wheat farm |
-| `adaptive.py` | Day-1 opponent read + strategy switch (measured worse; kept for the read) |
-| `arena.py` | Head-to-head win rate, N seeds x 2 sides, parallel |
-| `ladder*.py` | Runs against the reference agents |
-| `model.py`, `objective.py` | Closed-form economics off the simulator's own constants |
-| `probe.py`, `exp_*.py` | Single-mechanic experiments |
-| `analyze_replay.py` | Reads downloaded opponent replays |
-| `v2_*.py` … `v5_*.py` | Frozen prior submissions, kept as ladder opponents |
+```
+main.py                     submission entry point (generated, self-contained)
+kaggriculture/agents/       agent implementations
+  ranch.py                  livestock -- current best
+  crop.py                   melon / wheat / carrot
+  farm.py                   goose + wheat (superseded)
+  adaptive.py               day-1 opponent read + switch (measured worse; see below)
+eval/                       measurement harnesses
+  arena.py                  head-to-head win rate, N seeds x 2 sides, parallel
+  ladder.py                 vs reference agents, tiers 0-5
+  ladder2.py ladder3.py     variant sweeps against the ladder
+  meta_bench.py             vs tiers 6-9 (benchmark only, never submitted)
+  tune_adversarial.py       parameter tuning scored by win rate, not coins
+analysis/                   economics, computed off the simulator's own constants
+  model.py                  yields, action budgets, price curves
+  objective.py              objective function and strategy comparison
+  analyze_replay.py         reads downloaded opponent replays
+experiments/                one-off probes, kept as a record of what was tested
+submissions/                frozen past submissions, reused as ladder opponents
+tools/
+  build_submission.py       inlines an agent module into main.py
+  watch_rating.sh           polls the leaderboard rating
+refagents/                  third-party sparring partners (gitignored)
+```
+
+## Building a submission
+
+`main.py` is generated, not hand-edited -- Kaggle takes a single file, so the
+agent source lives in `kaggriculture/agents/` and gets inlined:
+
+```bash
+python tools/build_submission.py ranch --header tools/header_v6.txt \
+  --config "target={'COW': 8, 'SHEEP': 5}, feed_float_days=8, hands=8, land=2, buy_feed=True"
+kaggle competitions submit kaggriculture -f main.py -m "..."
+```
+
+The build compiles the result, so a syntax error fails locally rather than at
+submit time.
 
 ## What the measurements say
 

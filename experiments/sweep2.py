@@ -1,7 +1,9 @@
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import statistics as st
 from concurrent.futures import ProcessPoolExecutor
 from kaggle_environments import make as mk
-from crop import make
+from kaggriculture.agents.crop import make
 SEEDS=[7,11,23,42,99,123,256]
 def job(a):
     h,ms,sp,seed=a

@@ -1,9 +1,12 @@
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+ROOT = str(pathlib.Path(__file__).resolve().parents[1]) + "/"
 import statistics as st
 from concurrent.futures import ProcessPoolExecutor
 from kaggle_environments import make as mk
-from ranch import make as ranch
-from crop import make as crop
-REF="refagents/"
+from kaggriculture.agents.ranch import make as ranch
+from kaggriculture.agents.crop import make as crop
+REF = ROOT + "refagents/"
 OPPS=["melon_mateo","rancher_rita","homestead_hana","rotation_rosa"]
 R=lambda: ranch(target={"COW":8,"SHEEP":5},feed_float_days=8)
 C=lambda: crop(hands=6,melon_share=0.40,wheat_share=0.30,sell_per_turn=6,floor_frac=0.0,adapt=True)

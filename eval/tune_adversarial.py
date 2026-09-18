@@ -1,8 +1,10 @@
 """Tune against a real opponent, scoring WIN RATE -- not coins against `pass`."""
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 import statistics as st
 from concurrent.futures import ProcessPoolExecutor
 from kaggle_environments import make as mk
-from farm import make
+from kaggriculture.agents.farm import make
 
 REF = dict(geese_per_unit=3, hands=3, ambition=8)   # current champion
 
