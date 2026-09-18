@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+replays/
+logs/
+submission.tar.gz
+.chrome-profile/
+
+# Third-party reference agents. Not redistributed here: the .py files are MIT
+# and the .csv CC BY-SA 4.0, but tiers 6-9 embed a _TRACE field plan the
+# dataset author explicitly does not license. Re-fetch with:
+#   kaggle datasets download raykkretzschmar/kaggriculture-reference-agents \
+#     -p refagents --unzip
+refagents/
