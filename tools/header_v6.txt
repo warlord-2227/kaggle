@@ -1,0 +1,25 @@
+"""Kaggriculture submission v6: livestock with purchased feed.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT, tier 5 of
+raykkretzschmar/kaggriculture-reference-agents) and from observing the higher
+reference tiers as benchmark opponents; no code or recorded action sequence
+from that dataset is reused here.
+
+The change that mattered, and it reverses an earlier conclusion of ours:
+BUY the wheat feed rather than grow it. Growing it is cheaper in coins, but it
+spends tiles and actions on a 20-coin staple. Buying frees every tile for
+240-267 coin/tile/day livestock. We had measured bulk wheat buying as ruinous
+(1,350 units costs 66,828) -- true, but only against a 20,000-coin operation.
+
+Measured: 37,151 median (worst case 36,255) versus 29,430 for growing feed,
+and 30/30 on the reference ladder tiers 1-5, beating tier-5 Rancher Rita 6-0.
+
+Other disciplines, each a failure measured first:
+  * feed float must cover the herd AFTER the purchase; sizing it on the current
+    herd makes it zero on day 0, so animals are bought that cannot be fed.
+  * inventory is worth zero at turn 720, so liquidate from day 28.
+  * market orders resolve in list order and the first unit gets the best price,
+    so premium goods take the earliest slots.
+  * CARE daily: a cared cow yields 3 milk per 2 days instead of 1.
+"""
+
