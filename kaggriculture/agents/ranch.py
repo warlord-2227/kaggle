@@ -46,7 +46,10 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
          invest_until=22, land_days=(2, 8), buy_feed=False, n_straw=0,
          clear_weeds=True, grow_surplus=False, max_wheat=24, deny_ranchers=False,
          deny_mode="all", zone_mode="bands", feed_stock_days=10,
-         wheat_reserve_days=None, interleave_species=False, n_melon=0):
+         wheat_reserve_days=None, interleave_species=False, n_melon=0, melon_rate=4,
+         hands_dynamic=False, hands_min=3, hands_max=12, day0=None,
+         hands_mode="flat", hands_div=10.0,
+         straw_from=4, straw_rate=4, straw_cash=900, straw_min_animals=6):
     target = target or {"COW": 10, "SHEEP": 6}
 
     def agent(obs, config=None):
@@ -65,7 +68,30 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
         market = []
 
         if hour == 0:
-            for _ in range(hands):
+            n_hire = hands
+            mode = "formula" if hands_dynamic else hands_mode
+            if mode != "flat":
+                crops = ripe_soon = 0
+                for row in tiles:
+                    for t in row:
+                        if isinstance(t, dict) and t.get("kind") == "PLANT":
+                            crops += 1
+                            age = day - t["planted_day"]
+                            need = 10 if t["crop"] in ("MELON", "STRAWBERRY") else 4
+                            if age >= need - 1:              # ripe today or tomorrow
+                                ripe_soon += 1
+                animals_now = sum(1 for row in tiles for t in row if isinstance(t, dict) and t.get("animal"))
+                if mode == "formula":
+                    # First cut divided by 16 and floored at 3: hired 3 for twelve
+                    # days, under the proven flat 5, and spiralled. Measured useful
+                    # actions per unit are ~10.5; never go below the flat baseline.
+                    work = 3.0 * animals_now + 1.2 * crops + 1.0 * ripe_soon
+                    n_hire = max(max(hands_min, hands), min(hands_max, round(work / hands_div)))
+                else:
+                    # "event": the 129k opponent's ramp -- 5, +2 on land, +3 on harvest day.
+                    n_hire = hands + (2 if len(owned) >= 2 else 0) + (3 if ripe_soon >= 8 else 0)
+                    n_hire = min(hands_max, n_hire)
+            for _ in range(n_hire):
                 market.append(["HIRE"])
 
         cells = tiles_by_distance(owned)
@@ -138,13 +164,20 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
                 market.append(["BUY_PRODUCT", "WHEAT", 30])
             if (grow_surplus or not buy_feed) and seeds.get("WHEAT", 0) < 8 and money > 600:
                 market.append(["BUY_SEED", "WHEAT", 8])
-            if (n_melon and hour == 2 and day <= 19 and seeds.get("MELON", 0) < 4 and money > 700):
-                market.append(["BUY_SEED", "MELON", 4])
-            if (n_straw and hour == 3 and day >= 4 and n_animals >= 6
-                    and seeds.get("STRAWBERRY", 0) < 4 and money > 900):
-                market.append(["BUY_SEED", "STRAWBERRY", 4])   # ~4 plants/day ramp, like the meta
+            # Every ladder opponent that beats us sits at ~0 cash on day 9 and
+            # 10-19k on day 12: 28-43 melon seeds bought in the first three days,
+            # harvested as one lump. We bought 4/day and never got the lump.
+            if (n_melon and hour == 2 and day <= 19 and seeds.get("MELON", 0) < melon_rate
+                    and money > 80 * melon_rate + 300):
+                market.append(["BUY_SEED", "MELON", melon_rate])
+            if (n_straw and hour == 3 and day >= straw_from and n_animals >= straw_min_animals
+                    and seeds.get("STRAWBERRY", 0) < straw_rate and money > straw_cash):
+                market.append(["BUY_SEED", "STRAWBERRY", straw_rate])   # ramp like the meta
             # Animals: only with the full feed float plus a buffer on top.
-            if day <= invest_until:
+            if day == 0 and day0 and hour == 1:
+                for sp, n in day0.items():
+                    market.append(["BUY_ANIMAL", sp, n])
+            elif day <= invest_until:
                 def deficit(sp):
                     want = target.get(sp, 0)
                     have = live.get(sp, 0) + shed.get(sp, 0) + sum(i.get(sp, 0) for i in invs)

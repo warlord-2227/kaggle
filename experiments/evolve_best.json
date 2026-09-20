@@ -1,0 +1,31 @@
+{
+ "genome": {
+  "hands": 6,
+  "cow": 8,
+  "sheep": 4,
+  "feed_float_days": 7,
+  "n_melon": 25,
+  "max_wheat": 8,
+  "n_straw": 0,
+  "land": 1,
+  "liquidate_from": 28,
+  "invest_until": 17,
+  "animal_batch": 1,
+  "animal_buffer": 155,
+  "sell_chunk": 19,
+  "hands_mode": "flat",
+  "d0cow": 2,
+  "d0sheep": 0,
+  "deny_mode": "buyers",
+  "melon_rate": 5
+ },
+ "margin": 18860.75,
+ "wins": 0.75,
+ "ours": 52033.666666666664,
+ "by_opp": {
+  "v12": 27113,
+  "rancher_": 49978,
+  "melon_ma": 55916,
+  "closer_c": -57564
+ }
+}

@@ -1,21 +1,20 @@
-"""Kaggriculture submission v19: grove v2 schedule tuned by evolutionary search.
+"""Kaggriculture submission v18: grove v2 -- fertilizer-aware crop valuation.
 
-Our own implementation (kaggriculture/agents/grove.py); design in v17/v18.
+Our own implementation (kaggriculture/agents/grove.py); see v17 for the design.
 No third-party code or recorded action sequence is used.
 
-Configuration = the best genome of experiments/evolve_grove.py (mu+lambda over
-28 schedule knobs, fitness = mean coin margin vs pass, the meta line, v16 and
-grove itself on the fair environment). Versus the v18 defaults: 1-day feed
-stock instead of 2, cash floor 40, 5 hands on day 0, 2 animals bought per day,
-sell lots of 6, strawberry peak 38 tiles, 5 cows + 5 sheep, melon 5 -> 11.
+Changes from v17, all from reading the engine's crop rules:
+  * a plant turns to weed after two unwatered days in a row -> watering is
+    priced as survival first (600 when the streak is at 1), routine otherwise;
+  * a strawberry yields 1 unit every 2 days from age 10, 2 if fertilized AND
+    watered that night -> fertilize on odd ages 9-15 (one unit covers two
+    production nights), keep cow/sheep fertilizer for the fields, buy the
+    shortfall; melon yield accrues per watered day at ages 6-12 (+2 fertilized);
+  * a unit picks the animal up first and builds the pen itself (one trip);
+  * fertilizer reserve sized to field demand, surplus sold.
 
-Demand-aware ramp: town shops unlock on days 4, 6, 10, 12, 16...; if none of them
-buys strawberries by day 7 the ramp is capped at 10 tiles and stopped on day 13
-(freed cells go to melon or wheat). On the 12% of seeds with no strawberry buyer
-this lifts the worst case from 79k to 87k vs pass; normal seeds are unchanged.
-
-Fresh seeds: 8-0 vs the v18 defaults (91,362 vs 81,307), 137,576 vs pass
-(v18: 128,168), 77,760 vs the meta line (v18: 73,544).
+Fair-env, 4 seeds: 127,786 vs pass (v17: 117,983), 65,768 vs the meta line
+(v17: 59,631), 101,201 vs v16 (v17: 82,749); 6-4 vs v17 head-to-head.
 """
 import math
 
@@ -28,10 +27,6 @@ COST = {"COW": 400, "SHEEP": 500, "GOOSE": 300}
 RIPE = {"MELON": 10, "STRAWBERRY": 10, "WHEAT": 4, "CARROT": 3, "TOMATO": 8}
 ONGOING = {"STRAWBERRY", "TOMATO"}
 SEED = {"MELON": 80, "STRAWBERRY": 100, "WHEAT": 10}
-SHOPS = {"BAKERY": ["EGG", "WHEAT"], "PIZZA_SHOP": ["MILK", "TOMATO", "WHEAT"],
-         "BRUNCH_SPOT": ["EGG", "WHEAT", "STRAWBERRY"], "YARN_STORE": ["WOOL"],
-         "ICE_CREAM_SHOP": ["STRAWBERRY", "MILK", "WHEAT"], "PET_CAFE": ["CARROT"],
-         "SMOOTHIE_SHOP": ["STRAWBERRY", "MILK"], "FARMERS_MARKET": ["WHEAT", "CARROT", "TOMATO", "STRAWBERRY"]}
 
 
 def tiles_by_distance(quads):
@@ -72,7 +67,7 @@ DEFAULT = dict(
     feed_days=2, cash_floor=80,
     straw_rate=6, straw_cash=350,
     sell_chunk=8, melon_chunk=6, fert_reserve=2, liquidate_from=28,
-    day0_wheat=10, animals_per_day=1, harvest_min_animal=2, herd_first=False, dist_pow=1.0, adaptive=True, straw_floor=0.55, melon_floor=0.4, cap_early=10, cap_mid=10, adaptive_cows=False,
+    day0_wheat=10, animals_per_day=1, harvest_min_animal=2, herd_first=False,
 )
 
 
@@ -148,37 +143,6 @@ def make(debug=False, **over):
             have[w] = have.get(w, 0) + 1
         rest = [c for c in cells if c not in plan]
         n_wh = S["wheat"] if n_st else max(S["wheat"], S["wheat_min"])
-        if S["adaptive"] and not endgame:
-            # The plan assumes town demand for strawberries. Shops unlock on days 4, 6, 10, 12,
-            # 16, 20, 24 (drawn at random); with no strawberry buyer the market gluts and the
-            # price falls to ~16 by day 24. Size the ramp to the shops that actually exist,
-            # and stop adding tiles once the price has collapsed; freed cells go to melon
-            # (its market holds either way) or wheat.
-            shops = (obs.get("town") or {}).get("unlocked_shops", [])
-            demand = {}
-            for sh in shops:
-                for prod in SHOPS.get(sh, []):
-                    demand[prod] = demand.get(prod, 0) + 1
-            st_ok = prices.get("STRAWBERRY", 120) >= S["straw_floor"] * 120
-            mel_ok = prices.get("MELON", 250) >= S["melon_floor"] * 250
-            if demand.get("STRAWBERRY", 0) == 0 and day >= 7:
-                # shops are drawn on days 4, 6, 10, 12, 16...: 2 known by day 7, 3 by 11, 4 by 13.
-                cap = S["cap_early"] if day < 11 else (S["cap_mid"] if day < 13 else have.get("STRAWBERRY", 0))
-                n_st = min(n_st, cap)
-                if S["adaptive_cows"] and demand.get("MILK", 0) >= 1 and day >= 11:
-                    want_cows = max(want_cows, 8)          # milk has buyers, strawberries don't
-            if not st_ok:
-                cut = max(0, n_st - have.get("STRAWBERRY", 0))
-                n_st = have.get("STRAWBERRY", 0)
-                if mel_ok and day <= S["melon_until"]: n_mel += cut
-                else: n_wh += cut
-            if not mel_ok:
-                cut = max(0, n_mel - have.get("MELON", 0))
-                n_mel = have.get("MELON", 0); n_wh += cut
-        extra_cows = want_cows - pen_roles.count("COW")
-        if extra_cows > 0:
-            for c in rest[:extra_cows]: plan[c] = "COW"
-            rest = rest[extra_cows:]
         for crop, target in (("MELON", n_mel), ("STRAWBERRY", n_st), ("WHEAT", n_wh)):
             k = max(0, target - have.get(crop, 0))
             for c in rest[:k]: plan[c] = crop
@@ -236,7 +200,7 @@ def make(debug=False, **over):
                     market.append(["BUY_PRODUCT", "WHEAT", min(need - wheat_have, int(money // P("WHEAT", 30)))])
                 nq = len(owned)
                 if hour == 1 and nq - 1 < len(S["land_days"]) and day >= S["land_days"][nq - 1] \
-                        and money > [1000, 2000, 4000][nq - 1] + S["land_reserve"]:
+                        and money > 1000 * nq + S["land_reserve"]:
                     market.append(["BUY_LAND"])
             elif hour == (3 if S["herd_first"] else 2):
                 # seeds for empty planned cells
@@ -371,7 +335,7 @@ def make(debug=False, **over):
                 if need == "SHEDF" and inv.get("FERTILIZER", 0) > 0: continue
                 if need == "SHEDA" and any(inv.get(a, 0) > 0 for a in ANIMAL): continue
                 d = abs(x - ux) + abs(y - uy)
-                pairs.append((v / (1.0 + d) ** S["dist_pow"], u, j))
+                pairs.append((v / (1.0 + d), u, j))
         pairs.sort(reverse=True)
         chosen, taken_units, taken_cells = {}, set(), set()
         for score, u, j in pairs:
@@ -397,7 +361,7 @@ def make(debug=False, **over):
 
 
 # --- generated entry point -------------------------------------------------
-_impl = make(straw=[(4, 2), (5, 6), (6, 9), (7, 13), (8, 16), (9, 20), (10, 24), (11, 27), (12, 31), (13, 34), (14, 38)], straw_rate=5, straw_cash=328, straw_until=17, cows=[(0, 3), (5, 4), (7, 5), (9, 6), (11, 5)], sheep=[(0, 1), (5, 2), (8, 4), (10, 5)], melon=[(0, 5), (5, 9), (7, 11)], melon_until=18, wheat=10, feed_days=1, cash_floor=40, land_days=(6, 9), land_reserve=403, work_per_unit=8.0, hands_max=13, hands_day0=5, sell_chunk=6, melon_chunk=5, fert_reserve=2, day0_wheat=11, animals_per_day=2, harvest_min_animal=2, hands_min=3, herd_first=False)
+_impl = make()
 
 
 def agent(obs, config=None):

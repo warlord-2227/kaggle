@@ -1,0 +1,21 @@
+"""Kaggriculture submission v15: v14 tuned by a second round of evolutionary search.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT reference
+agent) and from reading opponent replays; no third-party code or recorded
+action sequence is reused.
+
+v15 is the second configuration chosen by an automated (mu+lambda) search
+(experiments/evolve_ranch.py) over 18 knobs of the v12 ranch agent, scored on
+the fair environment (deterministic shop draws) against v12, Rancher Rita,
+Melon Mateo and a meta-line sparring agent. Round 2 added v14 itself to the sparring set (self-play). Changes vs v12:
+
+  day-0 basket:   2 cows + 1 sheep (was 2 + 2)
+  feed float:     10 days of wheat on hand (was 8)
+  hands:          flat 5 all game (v13's event ramp was worse on the ladder)
+  wheat tiles:    6 (was 12)
+  melon tiles:    26 (was 24)
+  animal batch:   buy 1 animal at a time (was 2)
+
+Confirmation on 12 fresh seeds vs v14: 12-0, 53,783 vs 42,999 (+10.8k margin);
+v14 itself was 12-0 vs v12 (+25k).
+"""

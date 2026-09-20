@@ -1,0 +1,19 @@
+"""Kaggriculture submission v17: "grove" -- strawberry-led farm, labour auction.
+
+Our own implementation (kaggriculture/agents/grove.py). Design taken from
+reading 89 of our own ladder games and 7 replays: opponents that run cows and
+melons crash MILK, MELON and WOOL to near zero, while STRAWBERRY rises from
+128 to ~300 all game even with 45 tiles of it being sold; every agent that
+beat us ran 17-45 strawberry tiles by day 10-12, 10-13 hands and three
+quadrants by day 12. No third-party code or recorded action sequence is used.
+
+  plan    day 0: 3 cows, 1 sheep, 7 melon, 10 wheat; strawberry ramp from day 4
+          to 40 tiles by day 14; land on days 6 and 9; herd to 8 cows + 6 sheep.
+  labour  no zones: each pending job is priced in coins (harvest = units x
+          price, water = growth x price, feeding = the animal's life) and units
+          are matched greedily by value / (1 + distance); idle units PASS.
+          Hands are hired to the work on the board (Fibonacci hire cost).
+
+Fair-env: 116,480 vs pass over 8 seeds (min 103,939; v16: 84,416), 8-0 vs v16
+(76,563 vs 57,023), 4-0 vs Rancher Rita and Melon Mateo.
+"""

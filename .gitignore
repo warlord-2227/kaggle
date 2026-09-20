@@ -12,3 +12,4 @@ submission.tar.gz
 #   kaggle datasets download raykkretzschmar/kaggriculture-reference-agents \
 #     -p refagents --unzip
 refagents/
+experiments/*_log.jsonl

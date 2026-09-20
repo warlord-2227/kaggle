@@ -1,0 +1,19 @@
+"""Kaggriculture submission v19: grove v2 schedule tuned by evolutionary search.
+
+Our own implementation (kaggriculture/agents/grove.py); design in v17/v18.
+No third-party code or recorded action sequence is used.
+
+Configuration = the best genome of experiments/evolve_grove.py (mu+lambda over
+28 schedule knobs, fitness = mean coin margin vs pass, the meta line, v16 and
+grove itself on the fair environment). Versus the v18 defaults: 1-day feed
+stock instead of 2, cash floor 40, 5 hands on day 0, 2 animals bought per day,
+sell lots of 6, strawberry peak 38 tiles, 5 cows + 5 sheep, melon 5 -> 11.
+
+Demand-aware ramp: town shops unlock on days 4, 6, 10, 12, 16...; if none of them
+buys strawberries by day 7 the ramp is capped at 10 tiles and stopped on day 13
+(freed cells go to melon or wheat). On the 12% of seeds with no strawberry buyer
+this lifts the worst case from 79k to 87k vs pass; normal seeds are unchanged.
+
+Fresh seeds: 8-0 vs the v18 defaults (91,362 vs 81,307), 137,576 vs pass
+(v18: 128,168), 77,760 vs the meta line (v18: 73,544).
+"""

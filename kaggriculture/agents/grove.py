@@ -1,21 +1,19 @@
-"""Kaggriculture submission v19: grove v2 schedule tuned by evolutionary search.
+"""Grove: strawberry-led mixed farm with a value-driven labour auction.
 
-Our own implementation (kaggriculture/agents/grove.py); design in v17/v18.
-No third-party code or recorded action sequence is used.
+Built from what the ladder replays showed (2026-09-21): opponents with cows and
+melons crash MILK/MELON/WOOL to near zero, while STRAWBERRY *rises* from 128 to
+~300 all game, even when 45 tiles of it are sold. Every agent that beat us ran
+17-45 strawberry tiles by day 10-12, 10-13 hands, three quadrants by day 12.
 
-Configuration = the best genome of experiments/evolve_grove.py (mu+lambda over
-28 schedule knobs, fitness = mean coin margin vs pass, the meta line, v16 and
-grove itself on the fair environment). Versus the v18 defaults: 1-day feed
-stock instead of 2, cash floor 40, 5 hands on day 0, 2 animals bought per day,
-sell lots of 6, strawberry peak 38 tiles, 5 cows + 5 sheep, melon 5 -> 11.
-
-Demand-aware ramp: town shops unlock on days 4, 6, 10, 12, 16...; if none of them
-buys strawberries by day 7 the ramp is capped at 10 tiles and stopped on day 13
-(freed cells go to melon or wheat). On the 12% of seeds with no strawberry buyer
-this lifts the worst case from 79k to 87k vs pass; normal seeds are unchanged.
-
-Fresh seeds: 8-0 vs the v18 defaults (91,362 vs 81,307), 137,576 vs pass
-(v18: 128,168), 77,760 vs the meta line (v18: 73,544).
+Two changes from the ranch agent:
+  * plan   -- day 0: 3 cows, 1 sheep, 7 melon, 10 wheat. Strawberry ramp from
+              day 4 to ~40 tiles by day 14; land on days 6 and 9; herd to 8+6.
+  * labour -- no fixed zones. Every hour each pending job gets a coin value
+              (harvest = units x price, water = growth x price, feed = the
+              animal's life ...) and units are matched to jobs greedily by
+              value / (1 + distance). Idle units PASS instead of walking to the
+              shed. Hands are hired to the work on the board (hire cost is
+              Fibonacci per hand per day, so 12 hands cost 376/day, 6 cost 20).
 """
 import math
 
@@ -394,14 +392,3 @@ def make(debug=False, **over):
                 "hands": [op_for(i + 1) for i in range(len(me["hands"]))],
                 "market": market[:10]}
     return agent
-
-
-# --- generated entry point -------------------------------------------------
-_impl = make(straw=[(4, 2), (5, 6), (6, 9), (7, 13), (8, 16), (9, 20), (10, 24), (11, 27), (12, 31), (13, 34), (14, 38)], straw_rate=5, straw_cash=328, straw_until=17, cows=[(0, 3), (5, 4), (7, 5), (9, 6), (11, 5)], sheep=[(0, 1), (5, 2), (8, 4), (10, 5)], melon=[(0, 5), (5, 9), (7, 11)], melon_until=18, wheat=10, feed_days=1, cash_floor=40, land_days=(6, 9), land_reserve=403, work_per_unit=8.0, hands_max=13, hands_day0=5, sell_chunk=6, melon_chunk=5, fert_reserve=2, day0_wheat=11, animals_per_day=2, harvest_min_animal=2, hands_min=3, herd_first=False)
-
-
-def agent(obs, config=None):
-    try:
-        return _impl(obs)
-    except Exception:
-        return {"farmer": ["PASS"], "hands": [], "market": []}

@@ -1,0 +1,22 @@
+"""Kaggriculture submission v16: third round of evolutionary search.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT reference
+agent) and from reading opponent replays; no third-party code or recorded
+action sequence is reused.
+
+Configuration chosen by a (mu+lambda) search (experiments/evolve_ranch.py) over
+18 knobs of the ranch agent on the fair environment (deterministic shop draws).
+Round 3's fitness scores absolute economy too (opponents: v15, pass, Rancher
+Rita, Melon Mateo, a meta-line sparring agent) after round 2 drifted toward
+agents that only spoiled our own farms. Changes vs v15:
+
+  hands:          flat 6 (was 5)
+  herd target:    8 cows + 4 sheep (was 8 + 5); day 0 buys 2 cows + 1 sheep
+  melon tiles:    17, planted 3/day (was 26 at 4/day)
+  wheat tiles:    15 (was 6)
+  land:           one extra quadrant (was two)
+  animal buffer:  104 coins kept back per purchase (was 400)
+
+Confirmation on 8 fresh seeds: 90,332 vs pass (v15: 79,395), 71,972 vs Rita
+(v15: 56,793), 7-1 head-to-head vs v15.
+"""
