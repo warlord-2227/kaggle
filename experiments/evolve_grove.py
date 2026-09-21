@@ -17,25 +17,27 @@ V16 = dict(target={'COW': 8, 'SHEEP': 4}, feed_float_days=10, hands=6, land=1, b
 OPPS = ["pass", ROOT + "refagents/closer_cleo.py", "v16", "grove"]
 SPACE = {
     "straw_rate": ("int", 3, 10), "straw_cash": ("int", 100, 800), "straw_start": ("int", 3, 9),
-    "straw_peak": ("int", 28, 48), "straw_peak_day": ("int", 11, 16), "straw_until": ("int", 15, 20),
-    "cows_final": ("int", 5, 10), "sheep_final": ("int", 2, 8), "sheep_fast": ("int", 0, 1),
+    "straw_peak": ("int", 20, 52), "straw_peak_day": ("int", 11, 16), "straw_until": ("int", 15, 20),
+    "cows_final": ("int", 4, 12), "sheep_final": ("int", 2, 9), "sheep_fast": ("int", 0, 1),
     "melon0": ("int", 4, 10), "melon_mid": ("int", 6, 14), "melon_until": ("int", 13, 20),
     "wheat": ("int", 5, 14), "feed_days": ("int", 1, 4), "cash_floor": ("int", 40, 700),
     "land1": ("int", 5, 8), "land2": ("int", 8, 12), "land_reserve": ("int", 0, 1500),
-    "work_per_unit": ("int", 6, 13), "hands_max": ("int", 8, 14), "hands_day0": ("int", 3, 6),
+    "work_per_unit": ("int", 4, 13), "hands_max": ("int", 8, 16), "hands_day0": ("int", 3, 6),
     "sell_chunk": ("int", 4, 14), "melon_chunk": ("int", 3, 10), "fert_reserve": ("int", 0, 4),
     "day0_wheat": ("int", 4, 14), "animals_per_day": ("int", 1, 4),
-    "harvest_min_animal": ("int", 1, 3), "hands_min": ("int", 2, 5), "herd_first": ("int", 0, 1), "harvest_full": ("int", 0, 1),
+    "harvest_min_animal": ("int", 1, 3), "hands_min": ("int", 2, 5), "herd_first": ("int", 0, 1), "harvest_full": ("int", 0, 1), "cows_fast": ("int", 0, 1),
 }
 BASE = dict(straw_rate=6, straw_cash=350, straw_start=4, straw_peak=40, straw_peak_day=14, straw_until=18,
             cows_final=8, sheep_final=6, sheep_fast=0, melon0=7, melon_mid=12, melon_until=19,
             wheat=10, feed_days=2, cash_floor=80, land1=6, land2=9, land_reserve=200,
-            work_per_unit=9, hands_max=12, hands_day0=4, sell_chunk=8, melon_chunk=6, fert_reserve=2, day0_wheat=10, animals_per_day=1, harvest_min_animal=2, hands_min=2, herd_first=0, harvest_full=0)
+            work_per_unit=9, hands_max=12, hands_day0=4, sell_chunk=8, melon_chunk=6, fert_reserve=2, day0_wheat=10, animals_per_day=1, harvest_min_animal=2, hands_min=2, herd_first=0, harvest_full=0, cows_fast=0)
 
 def to_kwargs(g):
     d0, dpk = g["straw_start"], max(g["straw_start"] + 1, g["straw_peak_day"])
     straw = [(d0, 2)] + [(d, int(round(2 + (g["straw_peak"] - 2) * (d - d0) / (dpk - d0)))) for d in range(d0 + 1, dpk + 1)]
-    cows = [(0, 3), (5, 4), (7, 5), (9, 6), (11, g["cows_final"])]
+    cf = g["cows_final"]
+    cows = ([(0, 3), (4, 4), (6, max(4, cf - 3)), (8, max(4, cf - 1)), (10, cf)] if g.get("cows_fast", 0)
+            else [(0, 3), (5, 4), (7, 5), (9, 6), (11, cf)])
     sheep = ([(0, 1), (4, 2), (6, 4), (8, g["sheep_final"])] if g["sheep_fast"]
              else [(0, 1), (5, 2), (8, 4), (10, g["sheep_final"])])
     melon = [(0, g["melon0"]), (5, max(g["melon0"], g["melon_mid"] - 2)), (7, g["melon_mid"])]
