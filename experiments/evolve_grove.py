@@ -16,7 +16,7 @@ V16 = dict(target={'COW': 8, 'SHEEP': 4}, feed_float_days=10, hands=6, land=1, b
            hands_mode='flat', day0={'COW': 2, 'SHEEP': 1})
 OPPS = ["pass", ROOT + "refagents/closer_cleo.py", "v16", "grove"]
 SPACE = {
-    "straw_rate": ("int", 3, 10), "straw_cash": ("int", 100, 800), "straw_start": ("int", 3, 6),
+    "straw_rate": ("int", 3, 10), "straw_cash": ("int", 100, 800), "straw_start": ("int", 3, 9),
     "straw_peak": ("int", 28, 48), "straw_peak_day": ("int", 11, 16), "straw_until": ("int", 15, 20),
     "cows_final": ("int", 5, 10), "sheep_final": ("int", 2, 8), "sheep_fast": ("int", 0, 1),
     "melon0": ("int", 4, 10), "melon_mid": ("int", 6, 14), "melon_until": ("int", 13, 20),
@@ -25,12 +25,12 @@ SPACE = {
     "work_per_unit": ("int", 6, 13), "hands_max": ("int", 8, 14), "hands_day0": ("int", 3, 6),
     "sell_chunk": ("int", 4, 14), "melon_chunk": ("int", 3, 10), "fert_reserve": ("int", 0, 4),
     "day0_wheat": ("int", 4, 14), "animals_per_day": ("int", 1, 4),
-    "harvest_min_animal": ("int", 1, 3), "hands_min": ("int", 2, 5), "herd_first": ("int", 0, 1),
+    "harvest_min_animal": ("int", 1, 3), "hands_min": ("int", 2, 5), "herd_first": ("int", 0, 1), "harvest_full": ("int", 0, 1),
 }
 BASE = dict(straw_rate=6, straw_cash=350, straw_start=4, straw_peak=40, straw_peak_day=14, straw_until=18,
             cows_final=8, sheep_final=6, sheep_fast=0, melon0=7, melon_mid=12, melon_until=19,
             wheat=10, feed_days=2, cash_floor=80, land1=6, land2=9, land_reserve=200,
-            work_per_unit=9, hands_max=12, hands_day0=4, sell_chunk=8, melon_chunk=6, fert_reserve=2, day0_wheat=10, animals_per_day=1, harvest_min_animal=2, hands_min=2, herd_first=0)
+            work_per_unit=9, hands_max=12, hands_day0=4, sell_chunk=8, melon_chunk=6, fert_reserve=2, day0_wheat=10, animals_per_day=1, harvest_min_animal=2, hands_min=2, herd_first=0, harvest_full=0)
 
 def to_kwargs(g):
     d0, dpk = g["straw_start"], max(g["straw_start"] + 1, g["straw_peak_day"])
@@ -47,7 +47,7 @@ def to_kwargs(g):
                 sell_chunk=g["sell_chunk"], melon_chunk=g["melon_chunk"], fert_reserve=g["fert_reserve"],
                 day0_wheat=g["day0_wheat"], animals_per_day=g.get("animals_per_day", 1),
                 harvest_min_animal=g.get("harvest_min_animal", 2), hands_min=g.get("hands_min", 2),
-                herd_first=bool(g.get("herd_first", 0)))
+                herd_first=bool(g.get("herd_first", 0)), harvest_full=bool(g.get("harvest_full", 0)))
 
 def play(job):
     g, opp, seed = job

@@ -70,7 +70,7 @@ DEFAULT = dict(
     feed_days=2, cash_floor=80,
     straw_rate=6, straw_cash=350,
     sell_chunk=8, melon_chunk=6, fert_reserve=2, liquidate_from=28,
-    day0_wheat=10, animals_per_day=1, harvest_min_animal=2, herd_first=False, dist_pow=1.0, adaptive=True, straw_floor=0.55, melon_floor=0.4, cap_early=10, cap_mid=10, adaptive_cows=False,
+    day0_wheat=10, animals_per_day=1, harvest_min_animal=2, herd_first=False, dist_pow=1.0, adaptive=True, straw_floor=0.55, melon_floor=0.4, cap_early=10, cap_mid=10, adaptive_cows=False, collect_value=0, harvest_full=False,
 )
 
 
@@ -296,7 +296,7 @@ def make(debug=False, **over):
                     if not t["cared_today"]:
                         jobs.append((90, (x, y), ["CARE"], None))
                     if t.get("fertilizer_available"):
-                        jobs.append((max(P("FERTILIZER", 90), p_st if n_st else 0), (x, y), ["COLLECT_FERTILIZER"], None))
+                        jobs.append((max(P("FERTILIZER", 90), p_st if n_st else 0, S["collect_value"]), (x, y), ["COLLECT_FERTILIZER"], None))
                 elif not t.get("animal") and held(w) > 0:
                     jobs.append((380, (x, y), ["PLACE", w], w))
                 continue
@@ -318,8 +318,10 @@ def make(debug=False, **over):
                         if t["yield_units"] >= 2 or day >= 26:
                             jobs.append((t["yield_units"] * p_st, (x, y), ["HARVEST"], None))
                     elif c == "MELON":
-                        if t["yield_units"] >= 6 or age >= 12 or endgame:
+                        if t["yield_units"] >= 6 or age >= (13 if S["harvest_full"] else 12) or endgame:
                             jobs.append((t["yield_units"] * p_mel, (x, y), ["HARVEST"], None))
+                    elif c == "WHEAT" and S["harvest_full"] and age <= 4 and t["yield_units"] < 6 and not endgame:
+                        pass                                    # one more watered day = one more unit
                     else:
                         jobs.append((t["yield_units"] * P(c, 30), (x, y), ["HARVEST"], None))
                 fert_on = t.get("fertilized_until_day", -1) >= day

@@ -1,0 +1,14 @@
+"""Kaggriculture submission v20: grove v2, second search round (self-play vs v19).
+
+Our own implementation (kaggriculture/agents/grove.py); design in v17/v18/v19.
+No third-party code or recorded action sequence is used.
+
+Configuration = best genome of experiments/evolve_grove.py round 5, sparring set
+pass + meta line + v16 + grove. Versus v19: herd bought before seeds (3 animals a
+day, wool harvested at the first unit), strawberry ramp from day 3 to 34 tiles by
+day 12, melon planting stops on day 13, land on days 8 and 11 behind a 1,042-coin
+reserve, hands hired at one per 6 units of work.
+
+Fresh seeds: 10-0 vs v19 head-to-head (89,028 vs 80,017); 131,391 vs pass
+(v19: 131,286).
+"""
