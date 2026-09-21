@@ -11,7 +11,7 @@ sys.path.insert(0, ROOT); sys.path.insert(0, ROOT + "eval")
 os.environ["PYTHONWARNINGS"] = "ignore"
 from concurrent.futures import ProcessPoolExecutor
 
-OPPS = ["pass", ROOT + "refagents/closer_cleo.py", "v20", "market"]
+OPPS = ["pass", ROOT + "refagents/closer_cleo.py", "v20", "v21"]
 GLUT = [9002, 9006, 9007, 9028, 9034, 9038, 9048, 9050]
 SPACE = {  # name: (kind, lo, hi)
     "cows_d0": ("int", 1, 3), "sheep_d0": ("int", 1, 4), "herd_ramp_day": ("int", 3, 8), "herd_until": ("int", 12, 20),
@@ -42,8 +42,8 @@ def play(job):
     a = market.make(**g)
     if opp == "v20":
         sp = importlib.util.spec_from_file_location("m20", ROOT + "submissions/v20_grove_tuned2.py"); m = importlib.util.module_from_spec(sp); sp.loader.exec_module(m); b = m.agent
-    elif opp == "market":
-        b = market.make()
+    elif opp == "v21":
+        b = market.make(**json.load(open(ROOT + "experiments/v21_genome.json")))
     else:
         b = opp
     env = mk("kaggriculture", configuration={"episodeSteps": 720, "seed": seed}); env.run([a, b])

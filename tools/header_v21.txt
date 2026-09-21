@@ -1,0 +1,22 @@
+"""Kaggriculture submission v21: "market" -- demand-driven farm (grove v3).
+
+Our own implementation (kaggriculture/agents/market.py). No third-party code
+or recorded action sequence is used.
+
+Design from the engine's market rules and the rank-1 team's replays: each
+unlocked town shop buys 6 units a day of every product it lists (12 if it
+lists one), the town centre buys 1 of everything, nothing buys melon or
+fertilizer. Selling up to that drain holds the price; selling past it slides
+down the glut curve. So the farm is re-sized every day to the shops that
+actually exist: cows, sheep, geese, strawberry, wheat, carrot and tomato each
+to their demand. Opening like the top teams (cows + 3 sheep cared daily, 10
+wheat, melon as the day-10 cash lump), herd bought whenever cash lands,
+harvested produce carried to the shed instead of waiting for the nightly dump,
+carrot/wheat sprint from day 22. Labour: grove's coin-priced auction.
+
+Knobs = best genome of experiments/evolve_market.py (50 knobs; sparring pass,
+meta line, v20, itself; one no-strawberry-shop seed per generation).
+
+Fresh seeds: 10-0 vs v20 (88,971 vs 78,460); 126,092 vs pass; 100-103k on
+seeds with no strawberry buyer (v20: 80-87k); 1-3 vs the meta line.
+"""
