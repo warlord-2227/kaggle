@@ -1,13 +1,13 @@
 {
  "genome": {
-  "straw_rate": 9,
+  "straw_rate": 8,
   "straw_cash": 285,
   "straw_start": 3,
-  "straw_peak": 34,
+  "straw_peak": 37,
   "straw_peak_day": 12,
   "straw_until": 19,
   "cows_final": 5,
-  "sheep_final": 6,
+  "sheep_final": 7,
   "sheep_fast": 0,
   "melon0": 5,
   "melon_mid": 13,
@@ -16,7 +16,7 @@
   "feed_days": 1,
   "cash_floor": 40,
   "land1": 8,
-  "land2": 11,
+  "land2": 10,
   "land_reserve": 1042,
   "work_per_unit": 6,
   "hands_max": 13,
@@ -24,19 +24,20 @@
   "sell_chunk": 13,
   "melon_chunk": 7,
   "fert_reserve": 1,
-  "day0_wheat": 9,
+  "day0_wheat": 7,
   "animals_per_day": 3,
   "harvest_min_animal": 1,
   "hands_min": 2,
-  "herd_first": 1
+  "herd_first": 1,
+  "harvest_full": 0
  },
- "margin": 49194.333333333336,
- "wins": 0.75,
- "ours": 99281.25,
+ "margin": 40278.416666666664,
+ "wins": 0.6666666666666666,
+ "ours": 116678.33333333333,
  "by_opp": {
-  "pass": 129614,
-  "closer": -18211,
-  "v16": 61636,
-  "grove": 23739
+  "pass": 133304,
+  "closer": -30138,
+  "v16": 57498,
+  "grove": 449
  }
 }

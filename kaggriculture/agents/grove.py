@@ -70,7 +70,7 @@ DEFAULT = dict(
     feed_days=2, cash_floor=80,
     straw_rate=6, straw_cash=350,
     sell_chunk=8, melon_chunk=6, fert_reserve=2, liquidate_from=28,
-    day0_wheat=10, animals_per_day=1, harvest_min_animal=2, herd_first=False, dist_pow=1.0, adaptive=True, straw_floor=0.55, melon_floor=0.4, cap_early=10, cap_mid=10, adaptive_cows=False, collect_value=0, harvest_full=False,
+    day0_wheat=10, animals_per_day=1, harvest_min_animal=2, herd_first=False, dist_pow=1.0, adaptive=True, straw_floor=0.55, melon_floor=0.4, cap_early=10, cap_mid=10, adaptive_cows=False, collect_value=0, harvest_full=False, match="unit",
 )
 
 
@@ -292,9 +292,11 @@ def make(debug=False, **over):
                     if t["yield_units"] >= S["harvest_min_animal"] or (endgame and t["yield_units"] > 0):
                         jobs.append((t["yield_units"] * pp, (x, y), ["HARVEST"], None))
                     if not t["fed_today"]:
-                        jobs.append((450 if t.get("consecutive_unfed", 0) else 260, (x, y), ["FEED"], "WHEAT"))
+                        # an unfed animal produces nothing that day (~1.5 milk or 0.5 wool + its care bonus);
+                        # two unfed days kill it. Price it above any single crop action.
+                        jobs.append((900 if t.get("consecutive_unfed", 0) else max(600, 3.0 * pp), (x, y), ["FEED"], "WHEAT"))
                     if not t["cared_today"]:
-                        jobs.append((90, (x, y), ["CARE"], None))
+                        jobs.append((0.8 * pp, (x, y), ["CARE"], None))
                     if t.get("fertilizer_available"):
                         jobs.append((max(P("FERTILIZER", 90), p_st if n_st else 0, S["collect_value"]), (x, y), ["COLLECT_FERTILIZER"], None))
                 elif not t.get("animal") and held(w) > 0:
@@ -372,6 +374,32 @@ def make(debug=False, **over):
                 if need == "SHEDA" and any(inv.get(a, 0) > 0 for a in ANIMAL): continue
                 d = abs(x - ux) + abs(y - uy)
                 pairs.append((v / (1.0 + d) ** S["dist_pow"], u, j))
+        if S["match"] == "job":
+            # job-centric: the most valuable job takes the nearest eligible free unit, and so on;
+            # ties in value broken by distance. Cuts travel versus ranking unit-job pairs by value/(1+d).
+            eligible = {}
+            for score, u, j in pairs:
+                eligible.setdefault(j, []).append((abs(jobs[j][1][0] - units[u][0]) + abs(jobs[j][1][1] - units[u][1]), u))
+            order = sorted(eligible, key=lambda j: -jobs[j][0])
+            pairs = []
+            for rank, j in enumerate(order):
+                for d, u in sorted(eligible[j]):
+                    pairs.append((-(rank * 1000 + d), u, j))
+        if S["match"] == "optimal" and pairs:
+            # global assignment: maximise the summed score over units (Hungarian), then fall through
+            # to the greedy loop with the optimal pairs first so cell-uniqueness rules still apply.
+            try:
+                import numpy as np
+                from scipy.optimize import linear_sum_assignment
+                us = sorted(set(u for _, u, _ in pairs)); js = sorted(set(j for _, _, j in pairs))
+                ui = {u: i for i, u in enumerate(us)}; ji = {j: i for i, j in enumerate(js)}
+                M = np.zeros((len(us), len(js)))
+                for sc, u, j in pairs: M[ui[u], ji[j]] = sc
+                rows, cols = linear_sum_assignment(-M)
+                opt = {(us[r], js[c]) for r, c in zip(rows, cols) if M[r, c] > 0}
+                pairs = [(sc + (1e6 if (u, j) in opt else 0), u, j) for sc, u, j in pairs]
+            except Exception:
+                pass
         pairs.sort(reverse=True)
         chosen, taken_units, taken_cells = {}, set(), set()
         for score, u, j in pairs:

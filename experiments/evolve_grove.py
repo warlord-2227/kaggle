@@ -55,7 +55,13 @@ def play(job):
     from kaggle_environments import make as mk
     from kaggriculture.agents import grove, ranch
     a = grove.make(**to_kwargs(g))
-    b = ranch.make(**V16) if opp == "v16" else grove.make() if opp == "grove" else opp
+    if opp == "grove":                       # self opponent = the latest submitted genome
+        try:
+            g20 = json.load(open(ROOT + "experiments/v20_genome.json")); b = grove.make(**to_kwargs(g20))
+        except Exception:
+            b = grove.make()
+    else:
+        b = ranch.make(**V16) if opp == "v16" else opp
     env = mk("kaggriculture", configuration={"episodeSteps": 720, "seed": seed}); env.run([a, b])
     f = env.steps[-1]; return f[0]["reward"], f[1]["reward"]
 
