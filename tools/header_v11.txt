@@ -1,0 +1,21 @@
+"""Kaggriculture submission v11: livestock + melon + wheat, zoned units, 5 hands.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT reference
+agent) and from reading opponent replays; no third-party code or recorded
+action sequence is reused.
+
+v10 -> v11: 24 of the 37 spare tiles switch from wheat to melon, seeds bought
+four a day from day 0, no planting after day 19. Fair-env, 5 seeds x 2 sides:
+
+                 vs pass    vs buy-feed ranch    vs Rancher Rita
+   v10 (wheat)    71,023          25,100              37,058
+   v11 (melon)    71,806          39,948 (+59%)       54,929 (+48%)
+
+Flat against a passive opponent, large gains against real ones: against a
+ranch we hold wheat as feed, against Rita she competes on it, so wheat is a
+weak line either way -- melon is a product neither of them sells.
+
+Strawberry was tried three times on this base and lost every time (-6 to -10%
+vs pass, 0-10 vs the ranch at 8 tiles); dropped.
+"""
+

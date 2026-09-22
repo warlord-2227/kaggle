@@ -1,0 +1,402 @@
+[
+ {
+  "ep": 111723514,
+  "opp_idx": 1,
+  "opp_sub": 56431349,
+  "opp_rating": 2960,
+  "opp_reward": 106088,
+  "top_sub": 56327925,
+  "top_reward": 101110,
+  "created": "2026-09-21T18:45:45.969256500Z"
+ },
+ {
+  "ep": 111791144,
+  "opp_idx": 0,
+  "opp_sub": 56440887,
+  "opp_rating": 2959,
+  "opp_reward": 116957,
+  "top_sub": 56263779,
+  "top_reward": 104734,
+  "created": "2026-09-21T22:55:23.951163800Z"
+ },
+ {
+  "ep": 111872384,
+  "opp_idx": 1,
+  "opp_sub": 56302467,
+  "opp_rating": 2958,
+  "opp_reward": 103123,
+  "top_sub": 56353982,
+  "top_reward": 105455,
+  "created": "2026-09-22T03:46:05.880252800Z"
+ },
+ {
+  "ep": 111859729,
+  "opp_idx": 1,
+  "opp_sub": 56426692,
+  "opp_rating": 2955,
+  "opp_reward": 92605,
+  "top_sub": 56327925,
+  "top_reward": 91140,
+  "created": "2026-09-22T03:02:11.491642300Z"
+ },
+ {
+  "ep": 111826145,
+  "opp_idx": 0,
+  "opp_sub": 56328447,
+  "opp_rating": 2952,
+  "opp_reward": 84904,
+  "top_sub": 56395336,
+  "top_reward": 78783,
+  "created": "2026-09-22T00:59:26.624377100Z"
+ },
+ {
+  "ep": 111882340,
+  "opp_idx": 0,
+  "opp_sub": 56398329,
+  "opp_rating": 2951,
+  "opp_reward": 103667,
+  "top_sub": 56327925,
+  "top_reward": 105976,
+  "created": "2026-09-22T04:22:05.529099700Z"
+ },
+ {
+  "ep": 111867616,
+  "opp_idx": 0,
+  "opp_sub": 56441703,
+  "opp_rating": 2951,
+  "opp_reward": 119377,
+  "top_sub": 56353982,
+  "top_reward": 125100,
+  "created": "2026-09-22T03:30:11.685800400Z"
+ },
+ {
+  "ep": 111830518,
+  "opp_idx": 1,
+  "opp_sub": 56420406,
+  "opp_rating": 2946,
+  "opp_reward": 110537,
+  "top_sub": 56263779,
+  "top_reward": 107198,
+  "created": "2026-09-22T01:15:54.046647500Z"
+ },
+ {
+  "ep": 111743390,
+  "opp_idx": 1,
+  "opp_sub": 56341959,
+  "opp_rating": 2944,
+  "opp_reward": 85571,
+  "top_sub": 56327925,
+  "top_reward": 86019,
+  "created": "2026-09-21T20:03:18.407683Z"
+ },
+ {
+  "ep": 111816053,
+  "opp_idx": 1,
+  "opp_sub": 56443671,
+  "opp_rating": 2940,
+  "opp_reward": 166277,
+  "top_sub": 56395336,
+  "top_reward": 155315,
+  "created": "2026-09-22T00:23:24.664556700Z"
+ },
+ {
+  "ep": 111842997,
+  "opp_idx": 1,
+  "opp_sub": 56392823,
+  "opp_rating": 2936,
+  "opp_reward": 100186,
+  "top_sub": 56395336,
+  "top_reward": 105070,
+  "created": "2026-09-22T02:02:05.123733600Z"
+ },
+ {
+  "ep": 111730218,
+  "opp_idx": 0,
+  "opp_sub": 56422998,
+  "opp_rating": 2934,
+  "opp_reward": 112271,
+  "top_sub": 56353982,
+  "top_reward": 120301,
+  "created": "2026-09-21T19:09:47.789109100Z"
+ },
+ {
+  "ep": 111880016,
+  "opp_idx": 1,
+  "opp_sub": 56287777,
+  "opp_rating": 2932,
+  "opp_reward": 84674,
+  "top_sub": 56353982,
+  "top_reward": 95090,
+  "created": "2026-09-22T04:14:05.487320700Z"
+ },
+ {
+  "ep": 111746895,
+  "opp_idx": 0,
+  "opp_sub": 56257389,
+  "opp_rating": 2930,
+  "opp_reward": 95131,
+  "top_sub": 56327925,
+  "top_reward": 99371,
+  "created": "2026-09-21T20:15:18.854284400Z"
+ },
+ {
+  "ep": 111875621,
+  "opp_idx": 0,
+  "opp_sub": 56407833,
+  "opp_rating": 2929,
+  "opp_reward": 146487,
+  "top_sub": 56263779,
+  "top_reward": 134259,
+  "created": "2026-09-22T03:58:05.789079900Z"
+ },
+ {
+  "ep": 111869900,
+  "opp_idx": 1,
+  "opp_sub": 56407159,
+  "opp_rating": 2929,
+  "opp_reward": 86147,
+  "top_sub": 56263779,
+  "top_reward": 90757,
+  "created": "2026-09-22T03:38:05.517842100Z"
+ },
+ {
+  "ep": 111842989,
+  "opp_idx": 1,
+  "opp_sub": 56407082,
+  "opp_rating": 2929,
+  "opp_reward": 95192,
+  "top_sub": 56353982,
+  "top_reward": 111969,
+  "created": "2026-09-22T02:02:05.118166600Z"
+ },
+ {
+  "ep": 111816414,
+  "opp_idx": 0,
+  "opp_sub": 56423001,
+  "opp_rating": 2928,
+  "opp_reward": 68094,
+  "top_sub": 56327925,
+  "top_reward": 77668,
+  "created": "2026-09-22T00:23:25.651824200Z"
+ },
+ {
+  "ep": 111810487,
+  "opp_idx": 0,
+  "opp_sub": 56392126,
+  "opp_rating": 2926,
+  "opp_reward": 82531,
+  "top_sub": 56327925,
+  "top_reward": 91693,
+  "created": "2026-09-22T00:03:24.850257700Z"
+ },
+ {
+  "ep": 111863199,
+  "opp_idx": 1,
+  "opp_sub": 56407095,
+  "opp_rating": 2924,
+  "opp_reward": 94972,
+  "top_sub": 56263779,
+  "top_reward": 113757,
+  "created": "2026-09-22T03:14:05.281722700Z"
+ },
+ {
+  "ep": 111822971,
+  "opp_idx": 0,
+  "opp_sub": 56289593,
+  "opp_rating": 2919,
+  "opp_reward": 95064,
+  "top_sub": 56263779,
+  "top_reward": 103043,
+  "created": "2026-09-22T00:47:24.559745700Z"
+ },
+ {
+  "ep": 111885764,
+  "opp_idx": 0,
+  "opp_sub": 56348854,
+  "opp_rating": 2917,
+  "opp_reward": 108774,
+  "top_sub": 56263779,
+  "top_reward": 103681,
+  "created": "2026-09-22T04:34:05.283320300Z"
+ },
+ {
+  "ep": 111837340,
+  "opp_idx": 0,
+  "opp_sub": 56263637,
+  "opp_rating": 2917,
+  "opp_reward": 92981,
+  "top_sub": 56353982,
+  "top_reward": 90353,
+  "created": "2026-09-22T01:42:05.597745400Z"
+ },
+ {
+  "ep": 111825324,
+  "opp_idx": 1,
+  "opp_sub": 56392117,
+  "opp_rating": 2910,
+  "opp_reward": 126589,
+  "top_sub": 56327925,
+  "top_reward": 131876,
+  "created": "2026-09-22T00:55:24.934379900Z"
+ },
+ {
+  "ep": 111859979,
+  "opp_idx": 1,
+  "opp_sub": 56443378,
+  "opp_rating": 2908,
+  "opp_reward": 104397,
+  "top_sub": 56327925,
+  "top_reward": 101591,
+  "created": "2026-09-22T03:02:11.824456300Z"
+ },
+ {
+  "ep": 111845151,
+  "opp_idx": 0,
+  "opp_sub": 56439235,
+  "opp_rating": 2906,
+  "opp_reward": 80574,
+  "top_sub": 56327925,
+  "top_reward": 88751,
+  "created": "2026-09-22T02:10:05.583418800Z"
+ },
+ {
+  "ep": 111873228,
+  "opp_idx": 1,
+  "opp_sub": 56428197,
+  "opp_rating": 2898,
+  "opp_reward": 81145,
+  "top_sub": 56353982,
+  "top_reward": 95095,
+  "created": "2026-09-22T03:50:06.726151300Z"
+ },
+ {
+  "ep": 111889123,
+  "opp_idx": 0,
+  "opp_sub": 56436166,
+  "opp_rating": 2894,
+  "opp_reward": 106726,
+  "top_sub": 56327925,
+  "top_reward": 117564,
+  "created": "2026-09-22T04:46:05.390946300Z"
+ },
+ {
+  "ep": 111856704,
+  "opp_idx": 1,
+  "opp_sub": 56441732,
+  "opp_rating": 2893,
+  "opp_reward": 116566,
+  "top_sub": 56263779,
+  "top_reward": 116354,
+  "created": "2026-09-22T02:50:06.008016Z"
+ },
+ {
+  "ep": 111780334,
+  "opp_idx": 0,
+  "opp_sub": 56439285,
+  "opp_rating": 2889,
+  "opp_reward": 110333,
+  "top_sub": 56327925,
+  "top_reward": 115691,
+  "created": "2026-09-21T22:15:25.826358100Z"
+ },
+ {
+  "ep": 111769354,
+  "opp_idx": 1,
+  "opp_sub": 56422843,
+  "opp_rating": 2889,
+  "opp_reward": 75597,
+  "top_sub": 56353982,
+  "top_reward": 84156,
+  "created": "2026-09-21T21:35:25.534120800Z"
+ },
+ {
+  "ep": 111803830,
+  "opp_idx": 0,
+  "opp_sub": 56434195,
+  "opp_rating": 2886,
+  "opp_reward": 99252,
+  "top_sub": 56353982,
+  "top_reward": 106010,
+  "created": "2026-09-21T23:39:26.853631700Z"
+ },
+ {
+  "ep": 111760112,
+  "opp_idx": 0,
+  "opp_sub": 56400834,
+  "opp_rating": 2882,
+  "opp_reward": 83529,
+  "top_sub": 56327925,
+  "top_reward": 92718,
+  "created": "2026-09-21T21:03:24.864183400Z"
+ },
+ {
+  "ep": 111870724,
+  "opp_idx": 0,
+  "opp_sub": 56446454,
+  "opp_rating": 2877,
+  "opp_reward": 110321,
+  "top_sub": 56353982,
+  "top_reward": 130604,
+  "created": "2026-09-22T03:42:11.929810Z"
+ },
+ {
+  "ep": 111747931,
+  "opp_idx": 1,
+  "opp_sub": 56376247,
+  "opp_rating": 2875,
+  "opp_reward": 119593,
+  "top_sub": 56263779,
+  "top_reward": 120642,
+  "created": "2026-09-21T20:19:18.247027Z"
+ },
+ {
+  "ep": 111848617,
+  "opp_idx": 1,
+  "opp_sub": 56433763,
+  "opp_rating": 2871,
+  "opp_reward": 86617,
+  "top_sub": 56263779,
+  "top_reward": 93357,
+  "created": "2026-09-22T02:22:04.745387700Z"
+ },
+ {
+  "ep": 111774771,
+  "opp_idx": 1,
+  "opp_sub": 56369101,
+  "opp_rating": 2867,
+  "opp_reward": 94730,
+  "top_sub": 56263779,
+  "top_reward": 99810,
+  "created": "2026-09-21T21:55:25.041264100Z"
+ },
+ {
+  "ep": 111743280,
+  "opp_idx": 1,
+  "opp_sub": 56407451,
+  "opp_rating": 2867,
+  "opp_reward": 88812,
+  "top_sub": 56327925,
+  "top_reward": 86703,
+  "created": "2026-09-21T20:03:18.209846400Z"
+ },
+ {
+  "ep": 111799087,
+  "opp_idx": 1,
+  "opp_sub": 56433325,
+  "opp_rating": 2864,
+  "opp_reward": 96134,
+  "top_sub": 56263779,
+  "top_reward": 108038,
+  "created": "2026-09-21T23:23:24.461307600Z"
+ },
+ {
+  "ep": 111828533,
+  "opp_idx": 0,
+  "opp_sub": 56392605,
+  "opp_rating": 2845,
+  "opp_reward": 80130,
+  "top_sub": 56263779,
+  "top_reward": 89472,
+  "created": "2026-09-22T01:07:55.659771200Z"
+ }
+]

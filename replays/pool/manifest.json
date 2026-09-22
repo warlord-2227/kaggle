@@ -1,0 +1,452 @@
+[
+ {
+  "ep": 111558589,
+  "opp_idx": 0,
+  "opp_sub": 56062036,
+  "opp_rating": 1033,
+  "opp_reward": 126885,
+  "our_reward": 83572,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111533031,
+  "opp_idx": 1,
+  "opp_sub": 55621379,
+  "opp_rating": 967,
+  "opp_reward": 112808,
+  "our_reward": 74682,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111468700,
+  "opp_idx": 1,
+  "opp_sub": 56414317,
+  "opp_rating": 808,
+  "opp_reward": 129441,
+  "our_reward": 67051,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111543215,
+  "opp_idx": 0,
+  "opp_sub": 56269340,
+  "opp_rating": 784,
+  "opp_reward": 83093,
+  "our_reward": 60550,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111575597,
+  "opp_idx": 0,
+  "opp_sub": 56183437,
+  "opp_rating": 780,
+  "opp_reward": 105882,
+  "our_reward": 102322,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111576753,
+  "opp_idx": 1,
+  "opp_sub": 55415072,
+  "opp_rating": 771,
+  "opp_reward": 75415,
+  "our_reward": 69373,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111473164,
+  "opp_idx": 1,
+  "opp_sub": 55772822,
+  "opp_rating": 755,
+  "opp_reward": 89251,
+  "our_reward": 63814,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111335935,
+  "opp_idx": 0,
+  "opp_sub": 55293532,
+  "opp_rating": 753,
+  "opp_reward": 120866,
+  "our_reward": 81472,
+  "our_sub": 56404036
+ },
+ {
+  "ep": 111351635,
+  "opp_idx": 0,
+  "opp_sub": 55665504,
+  "opp_rating": 752,
+  "opp_reward": 131710,
+  "our_reward": 82451,
+  "our_sub": 56404036
+ },
+ {
+  "ep": 111559742,
+  "opp_idx": 0,
+  "opp_sub": 55277563,
+  "opp_rating": 746,
+  "opp_reward": 62944,
+  "our_reward": 51854,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111535320,
+  "opp_idx": 0,
+  "opp_sub": 55269149,
+  "opp_rating": 744,
+  "opp_reward": 64286,
+  "our_reward": 63145,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111540985,
+  "opp_idx": 0,
+  "opp_sub": 56381187,
+  "opp_rating": 742,
+  "opp_reward": 86818,
+  "our_reward": 97420,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111347163,
+  "opp_idx": 1,
+  "opp_sub": 55257118,
+  "opp_rating": 741,
+  "opp_reward": 83337,
+  "our_reward": 49583,
+  "our_sub": 56404036
+ },
+ {
+  "ep": 111577862,
+  "opp_idx": 0,
+  "opp_sub": 55202772,
+  "opp_rating": 740,
+  "opp_reward": 74953,
+  "our_reward": 69772,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111557983,
+  "opp_idx": 1,
+  "opp_sub": 55237174,
+  "opp_rating": 739,
+  "opp_reward": 106455,
+  "our_reward": 105483,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111553255,
+  "opp_idx": 0,
+  "opp_sub": 56137874,
+  "opp_rating": 739,
+  "opp_reward": 124444,
+  "our_reward": 84477,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111548902,
+  "opp_idx": 1,
+  "opp_sub": 55847647,
+  "opp_rating": 737,
+  "opp_reward": 135272,
+  "our_reward": 109130,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111534178,
+  "opp_idx": 1,
+  "opp_sub": 55450473,
+  "opp_rating": 737,
+  "opp_reward": 91029,
+  "our_reward": 79697,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111572204,
+  "opp_idx": 0,
+  "opp_sub": 55256759,
+  "opp_rating": 736,
+  "opp_reward": 88072,
+  "our_reward": 78036,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111545465,
+  "opp_idx": 0,
+  "opp_sub": 56008838,
+  "opp_rating": 735,
+  "opp_reward": 123624,
+  "our_reward": 111585,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111554593,
+  "opp_idx": 1,
+  "opp_sub": 55244715,
+  "opp_rating": 729,
+  "opp_reward": 125963,
+  "our_reward": 87753,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111486880,
+  "opp_idx": 0,
+  "opp_sub": 55269876,
+  "opp_rating": 729,
+  "opp_reward": 79551,
+  "our_reward": 71556,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111547799,
+  "opp_idx": 0,
+  "opp_sub": 55223892,
+  "opp_rating": 725,
+  "opp_reward": 91376,
+  "our_reward": 81821,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111331470,
+  "opp_idx": 0,
+  "opp_sub": 56307120,
+  "opp_rating": 724,
+  "opp_reward": 126637,
+  "our_reward": 104131,
+  "our_sub": 56404036
+ },
+ {
+  "ep": 111531936,
+  "opp_idx": 1,
+  "opp_sub": 56351846,
+  "opp_rating": 722,
+  "opp_reward": 62610,
+  "our_reward": 67244,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111568792,
+  "opp_idx": 1,
+  "opp_sub": 56035800,
+  "opp_rating": 718,
+  "opp_reward": 73641,
+  "our_reward": 93884,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111439524,
+  "opp_idx": 1,
+  "opp_sub": 56388517,
+  "opp_rating": 717,
+  "opp_reward": 118176,
+  "our_reward": 104043,
+  "our_sub": 56404036
+ },
+ {
+  "ep": 111476598,
+  "opp_idx": 1,
+  "opp_sub": 55217921,
+  "opp_rating": 716,
+  "opp_reward": 68600,
+  "our_reward": 59691,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111569556,
+  "opp_idx": 0,
+  "opp_sub": 56002414,
+  "opp_rating": 713,
+  "opp_reward": 116410,
+  "our_reward": 101002,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111484454,
+  "opp_idx": 1,
+  "opp_sub": 56334660,
+  "opp_rating": 712,
+  "opp_reward": 165377,
+  "our_reward": 125947,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111465291,
+  "opp_idx": 1,
+  "opp_sub": 55967096,
+  "opp_rating": 710,
+  "opp_reward": 90420,
+  "our_reward": 77128,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111337164,
+  "opp_idx": 0,
+  "opp_sub": 55213805,
+  "opp_rating": 706,
+  "opp_reward": 116745,
+  "our_reward": 74517,
+  "our_sub": 56404036
+ },
+ {
+  "ep": 111565405,
+  "opp_idx": 1,
+  "opp_sub": 55454114,
+  "opp_rating": 703,
+  "opp_reward": 76122,
+  "our_reward": 68353,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111487845,
+  "opp_idx": 0,
+  "opp_sub": 56087803,
+  "opp_rating": 700,
+  "opp_reward": 76760,
+  "our_reward": 65813,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111544330,
+  "opp_idx": 1,
+  "opp_sub": 56420445,
+  "opp_rating": 696,
+  "opp_reward": 90447,
+  "our_reward": 119136,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111551384,
+  "opp_idx": 0,
+  "opp_sub": 56346496,
+  "opp_rating": 693,
+  "opp_reward": 78331,
+  "our_reward": 72003,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111546616,
+  "opp_idx": 0,
+  "opp_sub": 56127820,
+  "opp_rating": 692,
+  "opp_reward": 90956,
+  "our_reward": 90577,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111560886,
+  "opp_idx": 1,
+  "opp_sub": 55338004,
+  "opp_rating": 691,
+  "opp_reward": 85386,
+  "our_reward": 70607,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111474321,
+  "opp_idx": 0,
+  "opp_sub": 55782445,
+  "opp_rating": 689,
+  "opp_reward": 87161,
+  "our_reward": 70260,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111472061,
+  "opp_idx": 0,
+  "opp_sub": 55273794,
+  "opp_rating": 689,
+  "opp_reward": 102810,
+  "our_reward": 101857,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111552284,
+  "opp_idx": 1,
+  "opp_sub": 55698050,
+  "opp_rating": 688,
+  "opp_reward": 82408,
+  "our_reward": 66143,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111563148,
+  "opp_idx": 0,
+  "opp_sub": 55974269,
+  "opp_rating": 687,
+  "opp_reward": 89771,
+  "our_reward": 85909,
+  "our_sub": 56423303
+ },
+ {
+  "ep": 111539828,
+  "opp_idx": 0,
+  "opp_sub": 56083789,
+  "opp_rating": 684,
+  "opp_reward": 86236,
+  "our_reward": 77028,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111485561,
+  "opp_idx": 0,
+  "opp_sub": 56383497,
+  "opp_rating": 681,
+  "opp_reward": 74062,
+  "our_reward": 55003,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111466478,
+  "opp_idx": 0,
+  "opp_sub": 56413853,
+  "opp_rating": 678,
+  "opp_reward": 108719,
+  "our_reward": 98400,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111556870,
+  "opp_idx": 1,
+  "opp_sub": 56011526,
+  "opp_rating": 677,
+  "opp_reward": 102160,
+  "our_reward": 90513,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111492512,
+  "opp_idx": 0,
+  "opp_sub": 56403323,
+  "opp_rating": 668,
+  "opp_reward": 121312,
+  "our_reward": 106396,
+  "our_sub": 56413854
+ },
+ {
+  "ep": 111542100,
+  "opp_idx": 1,
+  "opp_sub": 55326571,
+  "opp_rating": 663,
+  "opp_reward": 85631,
+  "our_reward": 105707,
+  "our_sub": 56420053
+ },
+ {
+  "ep": 111333699,
+  "opp_idx": 1,
+  "opp_sub": 55633801,
+  "opp_rating": 659,
+  "opp_reward": 117250,
+  "our_reward": 106332,
+  "our_sub": 56404036
+ },
+ {
+  "ep": 111340448,
+  "opp_idx": 0,
+  "opp_sub": 55594107,
+  "opp_rating": 651,
+  "opp_reward": 71929,
+  "our_reward": 53540,
+  "our_sub": 56404036
+ }
+]

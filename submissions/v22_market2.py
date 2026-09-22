@@ -1,22 +1,24 @@
-"""Kaggriculture submission v23: "market", tuned against replayed real opponents.
+"""Kaggriculture submission v22: "market", second search round (self-play vs v21).
 
-Our own implementation (kaggriculture/agents/market.py); design in v21/v22.
-No third-party code or recorded action sequence is used in the agent.
+Our own implementation (kaggriculture/agents/market.py). No third-party code
+or recorded action sequence is used.
 
-What changed is the objective, not the agent: v21/v22 were tuned for coin
-margin against a handful of local sparring agents. v23's knobs come from
-experiments/evolve_market.py with fitness = win margin against 34 replayed
-ladder opponents rated 700-1033 that had beaten us (each replayed on its own
-recorded seed in the real environment), plus one game against pass.
+Design from the engine's market rules and the rank-1 team's replays: each
+unlocked town shop buys 6 units a day of every product it lists (12 if it
+lists one), the town centre buys 1 of everything, nothing buys melon or
+fertilizer. Selling up to that drain holds the price; selling past it slides
+down the glut curve. So the farm is re-sized every day to the shops that
+actually exist: cows, sheep, geese, strawberry, wheat, carrot and tomato each
+to their demand. Opening like the top teams (cows + 3 sheep cared daily, 10
+wheat, melon as the day-10 cash lump), herd bought whenever cash lands,
+harvested produce carried to the shed instead of waiting for the nightly dump,
+carrot/wheat sprint from day 22. Labour: grove's coin-priced auction.
 
-Benchmarks (native seeds, real env): 29/34 wins vs the training pool (v22:
-13/34), 15/16 vs a held-out pool rated 640-699 (v22: 13/16), 4-0 vs v22 and
-6-0 vs the previous candidate on the fair environment, 146k vs pass, 110k on
-seeds with no strawberry buyer.
-Notable knobs vs v22: herd cap 14 cows, 16 melon tiles kept until day 9,
-wheat up to 40 tiles (x1.5 of the herd for feed), carrots from day 6, 3
-animals a day, 8 hands minimum, a small Cournot discount for the opponent's
-supply (0.17).
+Knobs = best genome of experiments/evolve_market.py (50 knobs; sparring pass,
+meta line, v20, itself; one no-strawberry-shop seed per generation).
+
+Fresh seeds: 9-1 vs v21 (96,879 vs 88,816); 140,550 vs pass (v21: 126,092);
+104-111k on seeds with no strawberry buyer; 2-4 vs the meta line (89,890 vs 91,380).
 """
 import math
 
@@ -67,7 +69,7 @@ DEFAULT = dict(
     cows_d0=2, sheep_d0=3, herd_ramp_day=5, herd_until=16,
     milk_prior=4.0, milk_prior_early=10.0, prior_until=12, wool_prior=3.0, deliver_min=1000, deliver_k=0.3, deliver_min_early=150, deliver_early_until=10, cows_min=3, cows_max=12, sheep_min=3, sheep_max=10, geese_max=10,
     melon_tiles=8, melon_until=2,
-    opp_aware=True, opp_weight=0.0, straw_prior=10.0, straw_mult=1.2, straw_min=16, straw_max=40, straw_until=18, straw_rate=12, straw_cash=250,
+    straw_prior=10.0, straw_mult=1.2, straw_min=16, straw_max=40, straw_until=18, straw_rate=12, straw_cash=250,
     wheat_mult=1.0, wheat_feed_mult=0.5, wheat_min=10, wheat_max=40,
     carrot_from=8, carrot_max=16, tomato_from=8, tomato_max=8,
     sprint_from=21, sprint_until=26, straw_priority_day=6, herd_reserve=450,
@@ -75,14 +77,14 @@ DEFAULT = dict(
     hands_day0=4, hands_min=6, hands_max=11, work_per_unit=6.0,
     feed_days=1, cash_floor=40, animals_per_day=8, day0_wheat=9,
     sell_chunk=8, melon_chunk=8, fert_reserve=1, liquidate_from=28, harvest_min_animal=1,
-    dist_pow=1.0, adaptive=True, match="unit", zone_bias=0.0, zone_mode="none", zone_penalty=0.25, commit=False, stay=True, bundle=True,
+    dist_pow=1.0, adaptive=True, match="unit", zone_bias=0.0, commit=False, stay=True, bundle=True,
     collect_value=0, harvest_full=False,
 )
 
 
 def make(debug=False, **over):
     S = dict(DEFAULT); S.update(over)
-    state = {"day": -1, "commit": {}, "zones": None, "zones_day": -1, "zones_n": 0}
+    state = {"day": -1, "commit": {}}      # unit index -> (cell, op[0]) kept across hours
 
     def agent(obs, config=None):
         if debug:
@@ -135,28 +137,6 @@ def make(debug=False, **over):
             prods = SHOPS.get(sh, []); mult = 2 if len(prods) == 1 else 1
             for p in prods: drain[p] = drain.get(p, 0) + 6 * mult
         def clamp(v, lo, hi): return max(lo, min(hi, int(v)))
-        if S["opp_aware"]:
-            # Cournot best response: the opponent's farm is public. Estimate its daily supply per
-            # product and take it out of the town drain before sizing our lines; what they flood we
-            # leave, what they ignore we take.
-            opp = obs["farms"][1 - obs["player"]]
-            supply = {p: 0.0 for p in drain}
-            for row in opp["tiles"]:
-                for t in row:
-                    if not isinstance(t, dict): continue
-                    an = t.get("animal")
-                    if an == "COW": supply["MILK"] += 1.5
-                    elif an == "SHEEP": supply["WOOL"] += 1.33
-                    elif an == "GOOSE": supply["EGG"] += 2.0
-                    elif t.get("kind") == "PLANT":
-                        c = t["crop"]
-                        if c == "STRAWBERRY": supply["STRAWBERRY"] += 0.5
-                        elif c == "MELON": supply["MELON"] += 0.5
-                        elif c == "WHEAT": supply["WHEAT"] += 1.0
-                        elif c == "CARROT": supply["CARROT"] += 1.3
-                        elif c == "TOMATO": supply["TOMATO"] += 1.0
-            for p in drain:
-                drain[p] = max(1.0, drain[p] - S["opp_weight"] * supply[p])
         # early on, milk buyers (3 of the 8 shop types) are likely and a cow pays back fastest:
         # build the herd on a high prior, then let the real shops decide from mid-game
         milk_prior = S["milk_prior_early"] if day <= S["prior_until"] else S["milk_prior"]
@@ -417,43 +397,9 @@ def make(debug=False, **over):
                     and not tiles[c[1]][c[0]].get("animal"))) for c in planned):
                 jobs.append((400, SHED, ["PICKUP", w, 1], "SHEDA"))
 
-        # compact 2-D territories: balanced k-means over today's job tiles, one cluster per unit,
-        # recomputed at hour 0 (hands reset nightly) or when the unit count changes. A job outside a
-        # unit's own cluster is discounted by zone_penalty unless its cluster has nothing left.
+        # optional soft territories: planned cells split into serpentine bands, one per unit;
+        # a job outside a unit's band is discounted by zone_bias (0 = no territories)
         band_of = {}
-        if S["zone_mode"] == "kmeans" and n > 1 and jobs:
-            if state["zones_day"] != day or state["zones_n"] != n or not state["zones"]:
-                pts = {}
-                for v, c, op, need in jobs:
-                    if c == SHED: continue
-                    w = 3.0 if (plan.get(c) in ANIMAL) else 1.0
-                    pts[c] = max(pts.get(c, 0.0), w)
-                cells_ = list(pts)
-                if len(cells_) >= n:
-                    cap = sum(pts.values()) / n * 1.15
-                    # seeds: spread along a serpentine so clusters start apart
-                    serp = sorted(cells_, key=lambda c: (c[1], c[0] if c[1] % 2 == 0 else -c[0]))
-                    cents = [serp[int((i + 0.5) * len(serp) / n)] for i in range(n)]
-                    assign = {}
-                    for _ in range(8):
-                        load = [0.0] * n; assign = {}
-                        order = sorted(cells_, key=lambda c: min(abs(c[0] - cx) + abs(c[1] - cy) for cx, cy in cents))
-                        for c in order:
-                            ranked = sorted(range(n), key=lambda k: abs(c[0] - cents[k][0]) + abs(c[1] - cents[k][1]))
-                            k = next((k for k in ranked if load[k] + pts[c] <= cap), ranked[0])
-                            assign[c] = k; load[k] += pts[c]
-                        for k in range(n):
-                            mem = [c for c, kk in assign.items() if kk == k]
-                            if mem: cents[k] = (sum(c[0] for c in mem) / len(mem), sum(c[1] for c in mem) / len(mem))
-                    # give each cluster to the unit currently nearest its centroid (units start at the shed)
-                    state["zones"] = assign; state["zones_day"] = day; state["zones_n"] = n
-            band_of = dict(state["zones"] or {})
-            # clusters exhausted -> no penalty anywhere for that unit
-            has_job = {}
-            for v, c, op, need in jobs:
-                if c in band_of: has_job[band_of[c]] = True
-        elif S["zone_bias"] > 0:
-            band_of = {}
         if S["zone_bias"] > 0 and n > 1 and planned:
             rows_ = {}
             for c in planned: rows_.setdefault(c[1], []).append(c)
@@ -478,11 +424,7 @@ def make(debug=False, **over):
                 if isinstance(need, str) and need.startswith("DELIVER:") and int(need.split(":")[1]) != u: continue
                 d = abs(x - ux) + abs(y - uy)
                 sc = v / (1.0 + d) ** S["dist_pow"]
-                if band_of and (x, y) in band_of and band_of[(x, y)] != u:
-                    if S["zone_mode"] == "kmeans":
-                        if has_job.get(u, False): sc *= S["zone_penalty"]
-                    else:
-                        sc *= (1.0 - S["zone_bias"])
+                if band_of and (x, y) in band_of and band_of[(x, y)] != u: sc *= (1.0 - S["zone_bias"])
                 pairs.append((sc, u, j))
         if S["match"] == "job":
             # job-centric: the most valuable job takes the nearest eligible free unit, and so on;
@@ -580,7 +522,7 @@ def make(debug=False, **over):
 
 
 # --- generated entry point -------------------------------------------------
-_impl = make(cows_d0=2, sheep_d0=3, herd_ramp_day=6, herd_until=13, milk_prior=0, milk_prior_early=3.0, prior_until=8, wool_prior=0.78, cows_min=3, cows_max=14, sheep_min=3, sheep_max=7, geese_max=9, melon_tiles=16, melon_until=9, straw_prior=13.66, straw_mult=1.58, straw_min=8, straw_max=48, straw_until=19, straw_rate=7, straw_cash=207, straw_priority_day=6, wheat_mult=1.14, wheat_feed_mult=1.48, wheat_min=9, wheat_max=40, carrot_from=6, carrot_max=13, tomato_from=5, tomato_max=10, sprint_from=22, sprint_until=25, herd_reserve=415, hands_day0=3, hands_min=8, hands_max=11, work_per_unit=7.47, feed_days=2, cash_floor=87, animals_per_day=3, day0_wheat=9, sell_chunk=14, melon_chunk=7, fert_reserve=0, harvest_min_animal=2, deliver_min=1028, deliver_k=0.78, deliver_min_early=100, deliver_early_until=6, land_reserve=0, opp_weight=0.17)
+_impl = make(cows_d0=2, sheep_d0=3, herd_ramp_day=5, herd_until=14, milk_prior=3.08, milk_prior_early=3.61, prior_until=8, wool_prior=3.0, cows_min=2, cows_max=12, sheep_min=3, sheep_max=8, geese_max=9, melon_tiles=14, melon_until=3, straw_prior=10.0, straw_mult=1.65, straw_min=8, straw_max=46, straw_until=16, straw_rate=12, straw_cash=214, straw_priority_day=6, wheat_mult=1.04, wheat_feed_mult=0.83, wheat_min=9, wheat_max=20, carrot_from=10, carrot_max=19, tomato_from=6, tomato_max=7, sprint_from=22, sprint_until=26, herd_reserve=256, hands_day0=4, hands_min=7, hands_max=12, work_per_unit=9.55, feed_days=2, cash_floor=103, animals_per_day=7, day0_wheat=7, sell_chunk=7, melon_chunk=9, fert_reserve=0, harvest_min_animal=3, deliver_min=613, deliver_k=0.46, deliver_min_early=100, deliver_early_until=8, land_reserve=24)
 
 
 def agent(obs, config=None):

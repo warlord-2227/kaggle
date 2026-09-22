@@ -1,0 +1,19 @@
+"""Kaggriculture submission v13: v12 + day-0 sheep + event-based hand ramp.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT reference
+agent) and from reading opponent replays; no third-party code or recorded
+action sequence is reused.
+
+Live A/B against v12, which stays in the other active slot. From 37 real ladder
+games, every one of the 17 opponents that beat us peaked at 9-16 hands (we ran
+a flat 5) and 12 of 17 bought sheep on day 0 (we bought our first on day 11).
+
+  day-0 basket: 2 cows + 2 sheep instead of 4 cows -> first wool on day 6, not 18
+  hands:        5, +2 once a second quadrant is owned, +3 on a day with 8+ ripe
+                tiles (the melon harvest), capped at 12
+
+Fair-env, 5 seeds x 2 sides, vs v12: +20% against a buy-feed ranch (43,740 vs
+36,386), -3% vs pass, -12% vs Melon Mateo. Locally no configuration dominates;
+the real ladder is mostly ranch-type agents, so this is the bet.
+"""
+

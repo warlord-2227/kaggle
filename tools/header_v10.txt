@@ -1,0 +1,23 @@
+"""Kaggriculture submission v10: livestock + wheat, zoned units, 5 hands.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT reference
+agent) and from reading opponent replays; no third-party code or recorded
+action sequence is reused.
+
+What changed from v9, and why -- all measured under a fixed shop draw
+(eval/fair_env.py), because same-seed A/Bs in the raw env are confounded by
+the weed RNG feeding the town shop draw:
+
+  * Execution profile vs the 118k reference agent showed identical coins per
+    productive action (26 vs 28) but 44% fewer productive actions. The gap was
+    throughput, not strategy.
+  * Round-robin tile assignment gave every unit one tile from every distance
+    ring, so every unit walked the whole farm: 2.22 moves per work action vs
+    0.88. Units now own compact row-bands balanced by work weight, and an idle
+    unit takes the nearest job anywhere instead of returning to the shed.
+  * 8 hands spent their slack walking. 5 hands: work 31% -> 44%, walk 65% -> 55%.
+
+Fair-env, 5 seeds x 2 sides: 71,023 median vs pass (min 60,771), up from
+61,660; 10-0 vs the buy-feed ranch at 23,739.
+"""
+

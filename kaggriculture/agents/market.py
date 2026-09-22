@@ -1,22 +1,19 @@
-"""Kaggriculture submission v23: "market", tuned against replayed real opponents.
+"""Market: demand-driven farm (grove v3) -- the town's shops size every product line.
 
-Our own implementation (kaggriculture/agents/market.py); design in v21/v22.
-No third-party code or recorded action sequence is used in the agent.
+Built from what the ladder replays showed (2026-09-21): opponents with cows and
+melons crash MILK/MELON/WOOL to near zero, while STRAWBERRY *rises* from 128 to
+~300 all game, even when 45 tiles of it are sold. Every agent that beat us ran
+17-45 strawberry tiles by day 10-12, 10-13 hands, three quadrants by day 12.
 
-What changed is the objective, not the agent: v21/v22 were tuned for coin
-margin against a handful of local sparring agents. v23's knobs come from
-experiments/evolve_market.py with fitness = win margin against 34 replayed
-ladder opponents rated 700-1033 that had beaten us (each replayed on its own
-recorded seed in the real environment), plus one game against pass.
-
-Benchmarks (native seeds, real env): 29/34 wins vs the training pool (v22:
-13/34), 15/16 vs a held-out pool rated 640-699 (v22: 13/16), 4-0 vs v22 and
-6-0 vs the previous candidate on the fair environment, 146k vs pass, 110k on
-seeds with no strawberry buyer.
-Notable knobs vs v22: herd cap 14 cows, 16 melon tiles kept until day 9,
-wheat up to 40 tiles (x1.5 of the herd for feed), carrots from day 6, 3
-animals a day, 8 hands minimum, a small Cournot discount for the opponent's
-supply (0.17).
+Two changes from the ranch agent:
+  * plan   -- day 0: 3 cows, 1 sheep, 7 melon, 10 wheat. Strawberry ramp from
+              day 4 to ~40 tiles by day 14; land on days 6 and 9; herd to 8+6.
+  * labour -- no fixed zones. Every hour each pending job gets a coin value
+              (harvest = units x price, water = growth x price, feed = the
+              animal's life ...) and units are matched to jobs greedily by
+              value / (1 + distance). Idle units PASS instead of walking to the
+              shed. Hands are hired to the work on the board (hire cost is
+              Fibonacci per hand per day, so 12 hands cost 376/day, 6 cost 20).
 """
 import math
 
@@ -27,6 +24,8 @@ ANIMAL = {"COW": ("PASTURE", "BUILD_PASTURE", "MILK"),
           "GOOSE": ("COOP", "BUILD_COOP", "EGG")}
 COST = {"COW": 400, "SHEEP": 500, "GOOSE": 300}
 RIPE = {"MELON": 10, "STRAWBERRY": 10, "WHEAT": 4, "CARROT": 3, "TOMATO": 8}
+# one-shot crops: (first day of the watered-growth window, last growth day, max units)
+ONESHOT = {"WHEAT": (2, 4, 6), "CARROT": (2, 3, 4), "MELON": (6, 12, 6)}
 ONGOING = {"STRAWBERRY", "TOMATO"}
 SEED = {"MELON": 80, "STRAWBERRY": 100, "WHEAT": 10, "CARROT": 20, "TOMATO": 50}
 SHOPS = {"BAKERY": ["EGG", "WHEAT"], "PIZZA_SHOP": ["MILK", "TOMATO", "WHEAT"],
@@ -64,19 +63,24 @@ def _ramp(points, day):
 
 DEFAULT = dict(
     # opening (rank-1 pattern): 2 cows + 3 sheep cared daily -> 18 wool on day 6 buys the herd
-    cows_d0=2, sheep_d0=3, herd_ramp_day=5, herd_until=16,
-    milk_prior=4.0, milk_prior_early=10.0, prior_until=12, wool_prior=3.0, deliver_min=1000, deliver_k=0.3, deliver_min_early=150, deliver_early_until=10, cows_min=3, cows_max=12, sheep_min=3, sheep_max=10, geese_max=10,
+    cows_d0=2, sheep_d0=3, herd_ramp_day=5, herd_until=16, herd_until2=16, herd_rich_drain=25,
+    milk_prior=4.0, milk_prior_early=10.0, prior_until=12, wool_prior=3.0, deliver_min=1000, deliver_k=0.3, deliver_min_early=150, deliver_early_until=10, cows_min=3, cows_max=12, sheep_min=3, sheep_max=10, geese_max=10, geese_min=0,
+    herd_mode="target", crop_order="fixed", crop_value=0, npv_margin=800, glut_k=1.6, npv_horizon_cut=3, glut_pow=1.0, herd_npv=0,
     melon_tiles=8, melon_until=2,
     opp_aware=True, opp_weight=0.0, straw_prior=10.0, straw_mult=1.2, straw_min=16, straw_max=40, straw_until=18, straw_rate=12, straw_cash=250,
     wheat_mult=1.0, wheat_feed_mult=0.5, wheat_min=10, wheat_max=40,
-    carrot_from=8, carrot_max=16, tomato_from=8, tomato_max=8,
+    carrot_from=8, carrot_max=16, tomato_from=8, tomato_max=8, tomato_until=20, carrot_mult=1.0, tomato_mult=1.0, egg_drain_min=7,
     sprint_from=21, sprint_until=26, straw_priority_day=6, herd_reserve=450,
-    land_days=(6, 9), land_reserve=0,
+    land_days=None, land_day1=6, land_day2=9, land_day3=14, land_n=2, land_reserve=0,
     hands_day0=4, hands_min=6, hands_max=11, work_per_unit=6.0,
     feed_days=1, cash_floor=40, animals_per_day=8, day0_wheat=9,
     sell_chunk=8, melon_chunk=8, fert_reserve=1, liquidate_from=28, harvest_min_animal=1,
     dist_pow=1.0, adaptive=True, match="unit", zone_bias=0.0, zone_mode="none", zone_penalty=0.25, commit=False, stay=True, bundle=True,
     collect_value=0, harvest_full=False,
+    # executor fixes 09-22 (engine: a one-shot crop decays 1 unit / 2 hours from hour 0 of the day after its max-yield
+    # day; yield grows only on watered days in the window, so harvest on the last window day AFTER watering;
+    # the shed holds 100 units and the night drop discards the overflow)
+    harvest_decay=1, harvest_late_hour=18, shed_guard=1, shed_cap=100, water_growth_mult=1.0,
 )
 
 
@@ -100,6 +104,7 @@ def make(debug=False, **over):
         invs, shed, seeds = priv["inventories"], priv["shed"], priv["seeds"]
         prices = obs["market"]["prices"]
         endgame = day >= S["liquidate_from"]
+        land_days = S["land_days"] or (S["land_day1"], S["land_day2"], S["land_day3"])[:S["land_n"]]
         market = []
         cells = tiles_by_distance(owned)
 
@@ -135,12 +140,10 @@ def make(debug=False, **over):
             prods = SHOPS.get(sh, []); mult = 2 if len(prods) == 1 else 1
             for p in prods: drain[p] = drain.get(p, 0) + 6 * mult
         def clamp(v, lo, hi): return max(lo, min(hi, int(v)))
-        if S["opp_aware"]:
-            # Cournot best response: the opponent's farm is public. Estimate its daily supply per
-            # product and take it out of the town drain before sizing our lines; what they flood we
-            # leave, what they ignore we take.
-            opp = obs["farms"][1 - obs["player"]]
-            supply = {p: 0.0 for p in drain}
+        opp = obs["farms"][1 - obs["player"]]
+        supply = {p: 0.0 for p in drain}
+        if True:
+            # the opponent's farm is public: estimate its daily supply per product
             for row in opp["tiles"]:
                 for t in row:
                     if not isinstance(t, dict): continue
@@ -155,6 +158,7 @@ def make(debug=False, **over):
                         elif c == "WHEAT": supply["WHEAT"] += 1.0
                         elif c == "CARROT": supply["CARROT"] += 1.3
                         elif c == "TOMATO": supply["TOMATO"] += 1.0
+        if S["opp_aware"]:
             for p in drain:
                 drain[p] = max(1.0, drain[p] - S["opp_weight"] * supply[p])
         # early on, milk buyers (3 of the 8 shop types) are likely and a cow pays back fastest:
@@ -162,15 +166,46 @@ def make(debug=False, **over):
         milk_prior = S["milk_prior_early"] if day <= S["prior_until"] else S["milk_prior"]
         cows_t = clamp(round((drain["MILK"] + milk_prior) / 1.5), S["cows_min"], S["cows_max"])
         sheep_t = clamp(round((drain["WOOL"] + S["wool_prior"]) / 1.33), S["sheep_min"], S["sheep_max"])
-        geese_t = clamp(round(drain["EGG"] / 2.0), 0, S["geese_max"]) if drain["EGG"] >= 7 else 0
+        geese_t = clamp(round(drain["EGG"] / 2.0), 0, S["geese_max"]) if drain["EGG"] >= S["egg_drain_min"] else 0
+        geese_t = max(geese_t, S["geese_min"] if day >= S["herd_ramp_day"] else 0)   # top tier keeps 2-3 geese regardless
         if day < S["herd_ramp_day"]:                       # opening: the day-0 basket, then wait for the wool cash
             cows_t, sheep_t, geese_t = min(cows_t, S["cows_d0"]), min(sheep_t, S["sheep_d0"]), 0
-        if day > S["herd_until"]:                          # no new animals late: they would not pay back
+        if (S["herd_mode"] == "npv" or S.get("herd_npv", 0)) and day >= S["herd_ramp_day"]:
+            # Dynamic herd: an animal is bought while its remaining-season value beats its cost.
+            #   NPV = days_left x (yield/day x price - feed) + days_left x fertilizer - purchase
+            # and our supply of its product must not already exceed glut_k x the town's daily drain
+            # (past that, the price we would sell into is the glut curve, not the quoted one).
+            YIELD = {"COW": (1.5, "MILK", 8), "SHEEP": (1.33, "WOOL", 6), "GOOSE": (2.0, "EGG", 4)}
+            def our_supply(prod):
+                r = {"MILK": 1.5 * (live.get("COW", 0) + held("COW")), "WOOL": 1.33 * (live.get("SHEEP", 0) + held("SHEEP")), "EGG": 2.0 * (live.get("GOOSE", 0) + held("GOOSE"))}
+                return r.get(prod, 0.0)
+            def npv(sp):
+                rate, prod, first = YIELD[sp]
+                left = 29 - day - first - S["npv_horizon_cut"]
+                if left <= 0: return -1e9
+                fert = P("FERTILIZER", 60) if sp != "GOOSE" else 0
+                # expected price: today's quote, haircut by how far total supply (ours + theirs + this
+                # animal) would exceed the town's daily drain for that product
+                tot = our_supply(prod) + supply.get(prod, 0.0) + rate
+                price = P(prod, 100) * min(1.0, drain[prod] / max(tot, 1e-6)) ** S["glut_pow"]
+                return left * (rate * price - P("WHEAT", 30) + fert) - COST[sp]
+            def room(sp):
+                rate, prod, _ = YIELD[sp]
+                return our_supply(prod) + supply.get(prod, 0.0) + rate <= S["glut_k"] * drain[prod]
+            for sp, cur in (("COW", cows_t), ("SHEEP", sheep_t), ("GOOSE", geese_t)):
+                have = live.get(sp, 0) + held(sp)
+                want = have + 1 if (npv(sp) > S["npv_margin"] and room(sp)) else have
+                want = max(want, {"COW": S["cows_min"], "SHEEP": S["sheep_min"], "GOOSE": S["geese_min"]}[sp] if day < 12 else 0)
+                cap = {"COW": S["cows_max"], "SHEEP": S["sheep_max"], "GOOSE": S["geese_max"]}[sp]
+                if sp == "COW": cows_t = min(cap, want)
+                elif sp == "SHEEP": sheep_t = min(cap, want)
+                else: geese_t = min(cap, want)
+        elif day > (S["herd_until2"] if drain["MILK"] >= S["herd_rich_drain"] else S["herd_until"]):   # fixed-target mode: no new animals late (later cut-off when many milk buyers)
             cows_t, sheep_t, geese_t = live.get("COW", 0), live.get("SHEEP", 0), live.get("GOOSE", 0)
         straw_t = clamp(round((drain["STRAWBERRY"] + S["straw_prior"]) * S["straw_mult"]), S["straw_min"], S["straw_max"]) if day <= S["straw_until"] else 0
         wheat_t = clamp(round(drain["WHEAT"] * S["wheat_mult"] + n_herd * S["wheat_feed_mult"]), S["wheat_min"], S["wheat_max"])
-        carrot_t = clamp(round((drain["CARROT"] - 1) / 1.33), 0, S["carrot_max"]) if day >= S["carrot_from"] else 0
-        tomato_t = clamp(round(drain["TOMATO"] - 1), 0, S["tomato_max"]) if S["tomato_from"] <= day <= 20 else 0
+        carrot_t = clamp(round((drain["CARROT"] - 1) / 1.33 * S["carrot_mult"]), 0, S["carrot_max"]) if day >= S["carrot_from"] else 0
+        tomato_t = clamp(round((drain["TOMATO"] - 1) * S["tomato_mult"]), 0, S["tomato_max"]) if S["tomato_from"] <= day <= S["tomato_until"] else 0
         melon_t = S["melon_tiles"] if day <= S["melon_until"] else 0
         sprint = S["sprint_from"] <= day <= S["sprint_until"]
         sprint_crop = "CARROT" if drain["CARROT"] >= 7 else "WHEAT"
@@ -203,6 +238,15 @@ def make(debug=False, **over):
             order = [("WHEAT", min(wheat_t, S["wheat_min"])), ("MELON", melon_t), ("WHEAT", wheat_t), ("STRAWBERRY", straw_t), ("CARROT", carrot_t), ("TOMATO", tomato_t)]
         else:
             order = [("MELON", melon_t), ("STRAWBERRY", straw_t), ("WHEAT", wheat_t), ("CARROT", carrot_t), ("TOMATO", tomato_t)]
+        if (S["crop_order"] == "value" or S.get("crop_value", 0)) and day >= S["straw_priority_day"]:
+            # give free cells to crops by expected coins per tile-day: yield/day x quoted price, haircut by
+            # how far total supply (ours + the opponent's) exceeds the town's drain for that product
+            RATE = {"STRAWBERRY": 0.6, "MELON": 0.5, "WHEAT": 1.0, "CARROT": 1.3, "TOMATO": 1.0}
+            ours_sup = {"STRAWBERRY": 0.5 * have.get("STRAWBERRY", 0), "MELON": 0.5 * have.get("MELON", 0), "WHEAT": have.get("WHEAT", 0), "CARROT": 1.3 * have.get("CARROT", 0), "TOMATO": have.get("TOMATO", 0)}
+            def val(crop):
+                tot = ours_sup[crop] + supply.get(crop, 0.0) + RATE[crop]
+                return RATE[crop] * P(crop, 50) * min(1.0, drain[crop] / max(tot, 1e-6))
+            order = sorted(order, key=lambda ct: -val(ct[0]))
         if sprint: order = [(sprint_crop, 99)] + order
         for crop, target in order:
             k = max(0, target - have.get(crop, 0))
@@ -237,14 +281,16 @@ def make(debug=False, **over):
                 if (t["crop"] == "STRAWBERRY" and 7 <= age <= 15) or (t["crop"] == "MELON" and 4 <= age <= 10):
                     fert_demand += 1
         reserve_f = 0 if endgame else min(30, S["fert_reserve"] + fert_demand // 2)
+        held_total = sum(shed.values()) + sum(sum(i.values()) for i in invs)
+        crowded = S["shed_guard"] and held_total > S["shed_cap"] - 5      # the night drop discards what does not fit
         for item in ("STRAWBERRY", "MILK", "WOOL", "MELON", "EGG", "TOMATO", "CARROT", "FERTILIZER", "WHEAT"):
             if len(market) >= 10: break
             q = shed.get(item, 0)
             if item == "WHEAT": q -= reserve_w
             if item == "FERTILIZER": q -= reserve_f
-            if q <= 0 or prices.get(item, 0) <= 1:
+            if q <= 0 or (prices.get(item, 0) <= 1 and not crowded):
                 continue
-            chunk = 40 if endgame else (S["melon_chunk"] if item == "MELON" else S["sell_chunk"])
+            chunk = 40 if (endgame or crowded) else (S["melon_chunk"] if item == "MELON" else S["sell_chunk"])
             market.append(["SELL", item, min(q, chunk)])
 
         # ---- buying ---------------------------------------------------------------
@@ -262,7 +308,7 @@ def make(debug=False, **over):
                 if wheat_have < need and money > S["cash_floor"] and hour != 12:
                     market.append(["BUY_PRODUCT", "WHEAT", min(need - wheat_have, int(money // P("WHEAT", 30)))])
                 nq = len(owned)
-                if hour == 1 and nq - 1 < len(S["land_days"]) and day >= S["land_days"][nq - 1] \
+                if hour == 1 and nq - 1 < len(land_days) and day >= land_days[nq - 1] \
                         and money > [1000, 2000, 4000][nq - 1] + S["land_reserve"]:
                     market.append(["BUY_LAND"])
             elif hour in (2, 5, 8, 11, 14, 17, 20):
@@ -341,7 +387,7 @@ def make(debug=False, **over):
                 continue
             # crops
             if t is None:
-                late = (w == "MELON" and day > S["melon_until"]) or (w == "STRAWBERRY" and day > S["straw_until"]) or (w == "TOMATO" and day > 20)
+                late = (w == "MELON" and day > S["melon_until"]) or (w == "STRAWBERRY" and day > S["straw_until"]) or (w == "TOMATO" and day > S["tomato_until"])
                 if seeds.get(w, 0) > 0 and not late and not endgame:
                     v = {"STRAWBERRY": 220, "MELON": 180, "WHEAT": 35, "CARROT": 60, "TOMATO": 80}.get(w, 30)
                     jobs.append((v, (x, y), ["PLANT", w], None))
@@ -352,7 +398,17 @@ def make(debug=False, **over):
             elif t.get("kind") == "PLANT":
                 c = t["crop"]; age = day - t["planted_day"]
                 ripe = age >= RIPE.get(c, 4) and t["yield_units"] > 0
-                if ripe:
+                if S["harvest_decay"] and c in ONESHOT and t["yield_units"] > 0 and age >= RIPE[c]:   # the engine refuses HARVEST before first_yield_day
+                    w0, w1, ymax = ONESHOT[c]; pc = P(c, 30)
+                    if age > w1:                                   # decaying: a unit lost every 2 hours
+                        jobs.append((1.5 * t["yield_units"] * pc + 40, (x, y), ["HARVEST"], None))
+                    elif age == w1 and (t["watered_today"] or hour >= S["harvest_late_hour"] or endgame):
+                        jobs.append((t["yield_units"] * pc, (x, y), ["HARVEST"], None))   # last growth day: after the watering
+                    elif age >= w0 and t["yield_units"] >= ymax:
+                        jobs.append((t["yield_units"] * pc, (x, y), ["HARVEST"], None))   # fertilized to the cap early
+                    elif endgame and day >= 29 and age >= w0:
+                        jobs.append((t["yield_units"] * pc, (x, y), ["HARVEST"], None))
+                elif ripe:
                     if c == "STRAWBERRY":
                         if t["yield_units"] >= 2 or day >= 26:
                             jobs.append((t["yield_units"] * p_st, (x, y), ["HARVEST"], None))
@@ -379,9 +435,9 @@ def make(debug=False, **over):
                     elif c == "MELON" and 6 <= age <= 12 and t["yield_units"] < 6:
                         v = max(v, (1.6 if fert_on else 0.8) * p_mel)   # +1 (+2) yield per watered day
                     elif c == "WHEAT" and 2 <= age <= 4 and t["yield_units"] < 6:
-                        v = max(v, (2.0 if fert_on else 1.0) * p_wh)
+                        v = max(v, (2.0 if fert_on else 1.0) * p_wh * S["water_growth_mult"])   # a watered growth day = +1 unit
                     elif c == "CARROT" and 2 <= age <= 3 and t["yield_units"] < 4:
-                        v = max(v, (2.0 if fert_on else 1.0) * p_car)
+                        v = max(v, (2.0 if fert_on else 1.0) * p_car * S["water_growth_mult"])
                     elif c == "TOMATO" and age >= 7:
                         v = max(v, (1.0 if fert_on else 0.2) * p_tom)
                     jobs.append((v, (x, y), ["WATER"], None))
@@ -577,14 +633,3 @@ def make(debug=False, **over):
                 "hands": [op_for(i + 1) for i in range(len(me["hands"]))],
                 "market": market[:10]}
     return agent
-
-
-# --- generated entry point -------------------------------------------------
-_impl = make(cows_d0=2, sheep_d0=3, herd_ramp_day=6, herd_until=13, milk_prior=0, milk_prior_early=3.0, prior_until=8, wool_prior=0.78, cows_min=3, cows_max=14, sheep_min=3, sheep_max=7, geese_max=9, melon_tiles=16, melon_until=9, straw_prior=13.66, straw_mult=1.58, straw_min=8, straw_max=48, straw_until=19, straw_rate=7, straw_cash=207, straw_priority_day=6, wheat_mult=1.14, wheat_feed_mult=1.48, wheat_min=9, wheat_max=40, carrot_from=6, carrot_max=13, tomato_from=5, tomato_max=10, sprint_from=22, sprint_until=25, herd_reserve=415, hands_day0=3, hands_min=8, hands_max=11, work_per_unit=7.47, feed_days=2, cash_floor=87, animals_per_day=3, day0_wheat=9, sell_chunk=14, melon_chunk=7, fert_reserve=0, harvest_min_animal=2, deliver_min=1028, deliver_k=0.78, deliver_min_early=100, deliver_early_until=6, land_reserve=0, opp_weight=0.17)
-
-
-def agent(obs, config=None):
-    try:
-        return _impl(obs)
-    except Exception:
-        return {"farmer": ["PASS"], "hands": [], "market": []}

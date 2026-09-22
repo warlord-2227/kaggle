@@ -1,0 +1,18 @@
+"""Kaggriculture submission v12: v11 + growing crops keep their role.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT reference
+agent) and from reading opponent replays; no third-party code or recorded
+action sequence is reused.
+
+v11 -> v12, one fix: the field plan was rebuilt from the distance-sorted cell
+list every turn, so when quadrant 2 was bought on day 8 the list doubled and
+far tiles fell past the end of the planned range into None. Melons planted on
+days 0-3 in the NW corner were abandoned on day 8 and dead on day 11 -- the
+day they would have ripened. A planted tile now keeps its crop until harvested.
+
+Fair-env, 5 seeds x 2 sides:      vs pass     vs Mateo     vs Rita    weeds
+   v11                             71,806      61,911      54,929      8.4
+   v12                             83,954      74,348      55,517      4.2
+All 10-0. Floors: 76,320 vs pass, 65,987 vs Mateo.
+"""
+

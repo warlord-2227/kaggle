@@ -1,0 +1,19 @@
+"""Kaggriculture submission v9: livestock + wheat-for-sale, holds wheat only vs buyer-ranchers.
+
+Our own implementation. Disciplines learned from Rancher Rita (MIT reference
+agent) and from reading opponent replays; no third-party code or recorded
+action sequence is reused.
+
+Built from the ladder research (why v6 sat at rating ~500):
+  * v6 left 60% of unit-actions idle on 8 hands while buying ~3,000 wheat.
+    Spare tiles now grow wheat and the hands sell it. +20% vs pass, +25% vs Rita.
+  * v6 collapsed to 2,285 and 9,010 against other ranches: it bought its feed
+    from a market the opponent was selling into, funding them. v8 reads the
+    opponent's pens on day 1; against a rancher that grows no wheat of its own it holds wheat as feed and
+    stops buying. That matchup went from 0-10 to 4-6, score doubled.
+
+Reference ladder: 34/40 (v8: 34/40 but Rita 28k -> 32.9k, mirror 21k -> 23k; v6: 30/40).
+Herd 8 cows + 5 sheep, feed float 8 days, feed bought (bridge) then grown,
+liquidate from day 28.
+"""
+

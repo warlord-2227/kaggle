@@ -1,0 +1,18 @@
+"""Kaggriculture submission v18: grove v2 -- fertilizer-aware crop valuation.
+
+Our own implementation (kaggriculture/agents/grove.py); see v17 for the design.
+No third-party code or recorded action sequence is used.
+
+Changes from v17, all from reading the engine's crop rules:
+  * a plant turns to weed after two unwatered days in a row -> watering is
+    priced as survival first (600 when the streak is at 1), routine otherwise;
+  * a strawberry yields 1 unit every 2 days from age 10, 2 if fertilized AND
+    watered that night -> fertilize on odd ages 9-15 (one unit covers two
+    production nights), keep cow/sheep fertilizer for the fields, buy the
+    shortfall; melon yield accrues per watered day at ages 6-12 (+2 fertilized);
+  * a unit picks the animal up first and builds the pen itself (one trip);
+  * fertilizer reserve sized to field demand, surplus sold.
+
+Fair-env, 4 seeds: 127,786 vs pass (v17: 117,983), 65,768 vs the meta line
+(v17: 59,631), 101,201 vs v16 (v17: 82,749); 6-4 vs v17 head-to-head.
+"""

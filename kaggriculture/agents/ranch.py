@@ -44,7 +44,12 @@ def step(fx, fy, tx, ty):
 def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
          animal_batch=2, max_wheat_price=55, sell_chunk=20, liquidate_from=28,
          invest_until=22, land_days=(2, 8), buy_feed=False, n_straw=0,
-         clear_weeds=True):
+         clear_weeds=True, grow_surplus=False, max_wheat=24, deny_ranchers=False,
+         deny_mode="all", zone_mode="bands", feed_stock_days=10,
+         wheat_reserve_days=None, interleave_species=False, n_melon=0, melon_rate=4,
+         hands_dynamic=False, hands_min=3, hands_max=12, day0=None,
+         hands_mode="flat", hands_div=10.0,
+         straw_from=4, straw_rate=4, straw_cash=900, straw_min_animals=6):
     target = target or {"COW": 10, "SHEEP": 6}
 
     def agent(obs, config=None):
@@ -63,7 +68,30 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
         market = []
 
         if hour == 0:
-            for _ in range(hands):
+            n_hire = hands
+            mode = "formula" if hands_dynamic else hands_mode
+            if mode != "flat":
+                crops = ripe_soon = 0
+                for row in tiles:
+                    for t in row:
+                        if isinstance(t, dict) and t.get("kind") == "PLANT":
+                            crops += 1
+                            age = day - t["planted_day"]
+                            need = 10 if t["crop"] in ("MELON", "STRAWBERRY") else 4
+                            if age >= need - 1:              # ripe today or tomorrow
+                                ripe_soon += 1
+                animals_now = sum(1 for row in tiles for t in row if isinstance(t, dict) and t.get("animal"))
+                if mode == "formula":
+                    # First cut divided by 16 and floored at 3: hired 3 for twelve
+                    # days, under the proven flat 5, and spiralled. Measured useful
+                    # actions per unit are ~10.5; never go below the flat baseline.
+                    work = 3.0 * animals_now + 1.2 * crops + 1.0 * ripe_soon
+                    n_hire = max(max(hands_min, hands), min(hands_max, round(work / hands_div)))
+                else:
+                    # "event": the 129k opponent's ramp -- 5, +2 on land, +3 on harvest day.
+                    n_hire = hands + (2 if len(owned) >= 2 else 0) + (3 if ripe_soon >= 8 else 0)
+                    n_hire = min(hands_max, n_hire)
+            for _ in range(n_hire):
                 market.append(["HIRE"])
 
         cells = tiles_by_distance(owned)
@@ -87,17 +115,35 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
             if len(owned) < i + 2 and day >= d and money > 1000 * (i + 1) + 1500:
                 market.append(["BUY_LAND"]); break
 
-        # --- selling -------------------------------------------------------
+        # --- opponent read ------------------------------------------------
+        opp = obs["farms"][1 - obs["player"]]
+        opp_pens = sum(1 for row in opp["tiles"] for t in row
+                       if isinstance(t, dict) and (t.get("kind") in ("PASTURE", "COOP") or t.get("animal")))
         endgame = day >= liquidate_from
-        order = ["MILK", "WOOL", "EGG", "MELON", "CARROT", "WHEAT", "FERTILIZER"]
+        opp_wheat = sum(1 for row in opp["tiles"] for t in row
+                        if isinstance(t, dict) and t.get("crop") == "WHEAT")
+        # "buyers": a rancher with no wheat of their own must buy feed -- ours.
+        # A grower-rancher (Rita) does not need it; holding it just costs us.
+        is_rancher = opp_pens >= 3
+        is_buyer = is_rancher and opp_wheat < 5
+        hold_wheat = (deny_ranchers and grow_surplus and not endgame
+                      and (is_rancher if deny_mode == "all" else is_buyer))
+
+        # --- selling -------------------------------------------------------
+        # Premium first: orders resolve in list order and the first unit gets the
+        # best price. STRAWBERRY was missing here -- we grew it and never sold it.
+        order = ["MILK", "WOOL", "STRAWBERRY", "MELON", "EGG", "CARROT", "WHEAT", "FERTILIZER"]
         shed_total = sum(shed.values())
         for item in order:
             have = shed.get(item, 0)
             if have <= 0 or prices.get(item, 0) <= 1:
                 continue
+            if item == "WHEAT" and hold_wheat:
+                continue
             if item == "WHEAT" and not endgame:
-                # Wheat is feed first. Only sell genuine surplus.
-                surplus = have - n_animals * 4
+                # Keep a feed reserve in the shed; sell only above it.
+                rd = wheat_reserve_days if wheat_reserve_days is not None else (0 if buy_feed else 4)
+                surplus = have - n_animals * rd
                 if surplus <= 0 and shed_total < 80:
                     continue
                 have = max(surplus, 0) if shed_total < 80 else have
@@ -111,21 +157,34 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
         if not endgame:
             # Cheap feed top-up only.
             cap = 999 if buy_feed else max_wheat_price
-            need_w = n_animals * (10 if buy_feed else 6)
+            need_w = n_animals * (3 if hold_wheat else (feed_stock_days if buy_feed else 6))
             if (wheat_have < need_w and prices.get("WHEAT", 99) <= cap
                     and money > (animal_buffer if buy_feed else feed_float)
                     and hour in (1, 7, 13, 19)):
                 market.append(["BUY_PRODUCT", "WHEAT", 30])
-            for sd, cnt in (("WHEAT", 0 if buy_feed else 8), ("STRAWBERRY", n_straw)):
-                if cnt and seeds.get(sd, 0) < cnt and money > 600:
-                    market.append(["BUY_SEED", sd, cnt])
+            if (grow_surplus or not buy_feed) and seeds.get("WHEAT", 0) < 8 and money > 600:
+                market.append(["BUY_SEED", "WHEAT", 8])
+            # Every ladder opponent that beats us sits at ~0 cash on day 9 and
+            # 10-19k on day 12: 28-43 melon seeds bought in the first three days,
+            # harvested as one lump. We bought 4/day and never got the lump.
+            if (n_melon and hour == 2 and day <= 19 and seeds.get("MELON", 0) < melon_rate
+                    and money > 80 * melon_rate + 300):
+                market.append(["BUY_SEED", "MELON", melon_rate])
+            if (n_straw and hour == 3 and day >= straw_from and n_animals >= straw_min_animals
+                    and seeds.get("STRAWBERRY", 0) < straw_rate and money > straw_cash):
+                market.append(["BUY_SEED", "STRAWBERRY", straw_rate])   # ramp like the meta
             # Animals: only with the full feed float plus a buffer on top.
-            if day <= invest_until:
-                for sp in ("COW", "SHEEP"):
+            if day == 0 and day0 and hour == 1:
+                for sp, n in day0.items():
+                    market.append(["BUY_ANIMAL", sp, n])
+            elif day <= invest_until:
+                def deficit(sp):
                     want = target.get(sp, 0)
-                    held = shed.get(sp, 0) + sum(i.get(sp, 0) for i in invs)
-                    if live.get(sp, 0) + held < want and money >= (
-                            COST[sp] * animal_batch + feed_float + animal_buffer):
+                    have = live.get(sp, 0) + shed.get(sp, 0) + sum(i.get(sp, 0) for i in invs)
+                    return (want - have) / want if want else -1
+                order_sp = sorted(("COW", "SHEEP"), key=deficit, reverse=True) if interleave_species else ("COW", "SHEEP")
+                for sp in order_sp:
+                    if deficit(sp) > 0 and money >= COST[sp] * animal_batch + feed_float + animal_buffer:
                         market.append(["BUY_ANIMAL", sp, animal_batch])
                         break
 
@@ -135,15 +194,76 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
         want_list = ["COW"] * target.get("COW", 0) + ["SHEEP"] * target.get("SHEEP", 0)
         for i, c in enumerate(cells[:n_pen]):
             plan[c] = want_list[i]
-        for c in cells[n_pen:n_pen + n_straw]:
+        for c in cells[n_pen:n_pen + n_melon]:
+            plan[c] = "MELON"
+        for c in cells[n_pen + n_melon:n_pen + n_melon + n_straw]:
             plan[c] = "STRAWBERRY"
-        for c in cells[n_pen + n_straw:]:
-            plan[c] = None if buy_feed else "WHEAT"
+        spare = cells[n_pen + n_melon + n_straw:]
+        if buy_feed and not grow_surplus:
+            for c in spare: plan[c] = None
+        else:
+            for c in spare[:max_wheat]: plan[c] = "WHEAT"
+            for c in spare[max_wheat:]: plan[c] = None
 
+        # A growing crop keeps its role until harvested. The plan is rebuilt
+        # from the distance-sorted cell list every turn, so when quadrant 2 is
+        # bought the list doubles and far tiles fall off the end into None --
+        # melons planted on days 0-3 in the NW corner were abandoned on day 8
+        # and dead on day 11, the day they would have ripened.
+        for (x, y) in cells:
+            t = tiles[y][x]
+            if isinstance(t, dict) and t.get("kind") == "PLANT":
+                plan[(x, y)] = t["crop"]
         units = [me["farmer"]] + list(me["hands"])
-        assign = [[] for _ in units]
-        for i, c in enumerate(cells):
-            assign[i % len(units)].append(c)
+        n = len(units)
+        planned = [c for c in cells if plan.get(c) is not None]
+        if zone_mode == "roundrobin":
+            assign = [[] for _ in units]
+            for i, c in enumerate(planned):
+                assign[i % n].append(c)
+        elif zone_mode == "bands":
+            def weight(c):
+                return 3.0 if plan.get(c) in ANIMAL else 1.2
+            rows = {}
+            for c in planned:
+                rows.setdefault(c[1], []).append(c)
+            serp = []
+            for y in sorted(rows):
+                serp.extend(sorted(rows[y], key=lambda c: c[0], reverse=(y % 2 == 1)))
+            total = sum(weight(c) for c in serp)
+            assign = [[] for _ in units]
+            k, acc = 0, 0.0
+            for c in serp:
+                if k < n - 1 and acc >= total * (k + 1) / n:
+                    k += 1
+                assign[k].append(c)
+                acc += weight(c)
+        else:
+            # "strips": STABLE under land purchase. Bands recomputed over the
+            # whole tile list every turn, so buying quadrant 2 on day 8 doubled
+            # the list and shifted every unit's territory; melons planted on
+            # days 0-3 in the far NW corner were last watered day 8-10 and died
+            # on day 11 -- the day they would have ripened. Here each strip is
+            # one row of one quadrant, strips are processed in a FIXED order
+            # (NW rows, then NE, SW, SE), and each goes to the currently
+            # least-loaded unit. Adding strips at the end never changes an
+            # earlier strip's owner.
+            def weight(c):
+                w = plan.get(c)
+                return 0.0 if w is None else (3.0 if w in ANIMAL else 1.2)
+            load = [0.0] * n
+            assign = [[] for _ in units]
+            for q in ("NW", "NE", "SW", "SE"):
+                if q not in owned:
+                    continue
+                ox, oy = QO[q]
+                for y in range(oy, oy + 5):
+                    strip = [(x, y) for x in range(ox, ox + 5) if plan.get((x, y)) is not None]
+                    if not strip:
+                        continue
+                    k = min(range(n), key=lambda i: load[i])
+                    assign[k].extend(strip)
+                    load[k] += sum(weight(c) for c in strip)
 
         def unit_op(u, pos):
             fx, fy = pos
@@ -172,6 +292,8 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
             for (x, y) in mine:
                 t = tiles[y][x]
                 want = plan.get((x, y))
+                if want is None:
+                    continue
                 d = abs(x - fx) + abs(y - fy)
                 job = None
                 if want in ANIMAL:
@@ -188,12 +310,13 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
                     job = None
                 else:
                     if t is None:
-                        job = ["PLANT", want] if seeds.get(want, 0) > 0 else None
+                        late = want == "MELON" and day > 19
+                        job = ["PLANT", want] if seeds.get(want, 0) > 0 and not late else None
                     elif not isinstance(t, dict): job = None
                     elif t.get("kind") == "WEED": job = ["DIG"] if clear_weeds else None
                     elif t.get("kind") == "PLANT":
                         age = day - t["planted_day"]
-                        ready = 10 if t["crop"] == "STRAWBERRY" else 4
+                        ready = {"STRAWBERRY": 10, "MELON": 10}.get(t["crop"], 4)
                         if age >= ready and t["yield_units"] > 0: job = ["HARVEST"]
                         elif not t["watered_today"]: job = ["WATER"]
                 if job and d < bd:
@@ -201,6 +324,14 @@ def make(hands=8, target=None, land=2, feed_float_days=16, animal_buffer=400,
             if best:
                 mv = step(fx, fy, *best)
                 return mv or bj
+            # Nothing left in our band: help anywhere rather than idle (meta idles 6%, we idled 13-22%).
+            for (x, y) in planned:
+                t = tiles[y][x]; want = plan.get((x, y))
+                if want in ANIMAL and isinstance(t, dict) and t.get("animal"):
+                    if (not t["fed_today"] and carrying > 0) or not t["cared_today"] or t["yield_units"] >= 2:
+                        return step(fx, fy, x, y) or (["FEED"] if not t["fed_today"] and carrying > 0 else ["CARE"] if not t["cared_today"] else ["HARVEST"])
+                elif want and isinstance(t, dict) and t.get("kind") == "PLANT" and not t["watered_today"]:
+                    return step(fx, fy, x, y) or ["WATER"]
             return step(fx, fy, *SHED) or ["DROP"]
 
         return {"farmer": unit_op(0, units[0]),
