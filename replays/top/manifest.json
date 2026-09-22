@@ -1,0 +1,202 @@
+[
+ {
+  "ep": 111446129,
+  "opp_idx": 1,
+  "opp_sub": 56371729,
+  "opp_rating": 3197,
+  "opp_reward": 113004,
+  "dsm_reward": 106281
+ },
+ {
+  "ep": 111611532,
+  "opp_idx": 0,
+  "opp_sub": 56407295,
+  "opp_rating": 3096,
+  "opp_reward": 109592,
+  "dsm_reward": 119421
+ },
+ {
+  "ep": 111392606,
+  "opp_idx": 0,
+  "opp_sub": 56352346,
+  "opp_rating": 3080,
+  "opp_reward": 92588,
+  "dsm_reward": 101045
+ },
+ {
+  "ep": 111463663,
+  "opp_idx": 0,
+  "opp_sub": 56395336,
+  "opp_rating": 3072,
+  "opp_reward": 110647,
+  "dsm_reward": 125051
+ },
+ {
+  "ep": 111565038,
+  "opp_idx": 0,
+  "opp_sub": 56396983,
+  "opp_rating": 3069,
+  "opp_reward": 131886,
+  "dsm_reward": 148798
+ },
+ {
+  "ep": 111424886,
+  "opp_idx": 1,
+  "opp_sub": 56372014,
+  "opp_rating": 3059,
+  "opp_reward": 115133,
+  "dsm_reward": 139527
+ },
+ {
+  "ep": 111419540,
+  "opp_idx": 0,
+  "opp_sub": 56389384,
+  "opp_rating": 3047,
+  "opp_reward": 118042,
+  "dsm_reward": 130441
+ },
+ {
+  "ep": 111544886,
+  "opp_idx": 1,
+  "opp_sub": 56401905,
+  "opp_rating": 3041,
+  "opp_reward": 76366,
+  "dsm_reward": 77366
+ },
+ {
+  "ep": 111571687,
+  "opp_idx": 0,
+  "opp_sub": 56416487,
+  "opp_rating": 3035,
+  "opp_reward": 87284,
+  "dsm_reward": 94820
+ },
+ {
+  "ep": 111424882,
+  "opp_idx": 0,
+  "opp_sub": 56384319,
+  "opp_rating": 3035,
+  "opp_reward": 71857,
+  "dsm_reward": 183923
+ },
+ {
+  "ep": 111405144,
+  "opp_idx": 0,
+  "opp_sub": 56332038,
+  "opp_rating": 3033,
+  "opp_reward": 98636,
+  "dsm_reward": 109498
+ },
+ {
+  "ep": 111414734,
+  "opp_idx": 1,
+  "opp_sub": 56263779,
+  "opp_rating": 3011,
+  "opp_reward": 90360,
+  "dsm_reward": 100963
+ },
+ {
+  "ep": 111370603,
+  "opp_idx": 1,
+  "opp_sub": 56302467,
+  "opp_rating": 3008,
+  "opp_reward": 103076,
+  "dsm_reward": 113837
+ },
+ {
+  "ep": 111381657,
+  "opp_idx": 1,
+  "opp_sub": 56393666,
+  "opp_rating": 2990,
+  "opp_reward": 70350,
+  "dsm_reward": 88449
+ },
+ {
+  "ep": 111391464,
+  "opp_idx": 1,
+  "opp_sub": 56353982,
+  "opp_rating": 2986,
+  "opp_reward": 98218,
+  "dsm_reward": 121078
+ },
+ {
+  "ep": 111373699,
+  "opp_idx": 1,
+  "opp_sub": 56263637,
+  "opp_rating": 2984,
+  "opp_reward": 81134,
+  "dsm_reward": 101603
+ },
+ {
+  "ep": 111354070,
+  "opp_idx": 0,
+  "opp_sub": 56392345,
+  "opp_rating": 2969,
+  "opp_reward": 89924,
+  "dsm_reward": 107518
+ },
+ {
+  "ep": 111368157,
+  "opp_idx": 0,
+  "opp_sub": 56402567,
+  "opp_rating": 2966,
+  "opp_reward": 95347,
+  "dsm_reward": 110531
+ },
+ {
+  "ep": 111365948,
+  "opp_idx": 1,
+  "opp_sub": 56329409,
+  "opp_rating": 2963,
+  "opp_reward": 102405,
+  "dsm_reward": 119227
+ },
+ {
+  "ep": 111364832,
+  "opp_idx": 1,
+  "opp_sub": 56257389,
+  "opp_rating": 2958,
+  "opp_reward": 125512,
+  "dsm_reward": 152223
+ },
+ {
+  "ep": 111367047,
+  "opp_idx": 0,
+  "opp_sub": 56328447,
+  "opp_rating": 2953,
+  "opp_reward": 94963,
+  "dsm_reward": 110558
+ },
+ {
+  "ep": 111360387,
+  "opp_idx": 0,
+  "opp_sub": 56380335,
+  "opp_rating": 2951,
+  "opp_reward": 66270,
+  "dsm_reward": 77847
+ },
+ {
+  "ep": 111355165,
+  "opp_idx": 1,
+  "opp_sub": 56371083,
+  "opp_rating": 2940,
+  "opp_reward": 82086,
+  "dsm_reward": 97603
+ },
+ {
+  "ep": 111531465,
+  "opp_idx": 0,
+  "opp_sub": 56392126,
+  "opp_rating": 2939,
+  "opp_reward": 87987,
+  "dsm_reward": 100111
+ },
+ {
+  "ep": 111361516,
+  "opp_idx": 0,
+  "opp_sub": 56392823,
+  "opp_rating": 2938,
+  "opp_reward": 108055,
+  "dsm_reward": 117240
+ }
+]

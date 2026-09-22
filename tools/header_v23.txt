@@ -1,0 +1,20 @@
+"""Kaggriculture submission v23: "market", tuned against replayed real opponents.
+
+Our own implementation (kaggriculture/agents/market.py); design in v21/v22.
+No third-party code or recorded action sequence is used in the agent.
+
+What changed is the objective, not the agent: v21/v22 were tuned for coin
+margin against a handful of local sparring agents. v23's knobs come from
+experiments/evolve_market.py with fitness = win margin against 34 replayed
+ladder opponents rated 700-1033 that had beaten us (each replayed on its own
+recorded seed in the real environment), plus one game against pass.
+
+Benchmarks (native seeds, real env): 29/34 wins vs the training pool (v22:
+13/34), 15/16 vs a held-out pool rated 640-699 (v22: 13/16), 4-0 vs v22 and
+6-0 vs the previous candidate on the fair environment, 146k vs pass, 110k on
+seeds with no strawberry buyer.
+Notable knobs vs v22: herd cap 14 cows, 16 melon tiles kept until day 9,
+wheat up to 40 tiles (x1.5 of the herd for feed), carrots from day 6, 3
+animals a day, 8 hands minimum, a small Cournot discount for the opponent's
+supply (0.17).
+"""

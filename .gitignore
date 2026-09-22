@@ -13,3 +13,8 @@ submission.tar.gz
 #     -p refagents --unzip
 refagents/
 experiments/*_log.jsonl
+
+# public Apache-2.0 notebook outputs used as sparring opponents / chassis (notices retained in each file)
+!refagents/public/
+# live episode snapshots rewritten by tools/collect_episodes.sh
+analysis/data/live/
