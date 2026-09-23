@@ -224,3 +224,85 @@ species. New trace pool `replays/band2900/` (up to 40 distinct band opponents fr
 - Public chassis vs the band2900 pool (40 frozen traces of 2780–2960 opponents, native seeds): demand 33-7 +18.8k, v56 33-7
   +18.6k, farm2945 31-9 +17.8k (ours ~107k vs 88k). Frozen traces flatter a sale-racer, but the lineage sits comfortably above
   the band → the 2800+ target rests on this base; live confirmation from v25/v26 over the next day. v25 1850 after 15 games.
+
+## 2026-09-23 14:00 local — overnight ladder
+| sub | agent | games | record | rating path → now |
+|---|---|---|---|---|
+| v26 56453495 | demand-preserving byte-exact | 153 | 82-71 | 681→1927→2318→2442→2457 peak→**~2400–2445** (bronze line ≈ 2450) |
+| v25 56452284 | farm2945 + tuned constants | 156 | 87-69 | →2186 peak→**~2110–2160** |
+| v24 56451295 | farm2945 byte-exact (retired) | 24 | 23-1 | 1767 |
+Losses are coin-flips vs peers: v26 scores 97.6k vs 99.0k in its 66 losses (opponents rated 2222–2576). The demand lineage rates
+~280 above farm2945+tuned in the same field. Public scores quoted in the notebooks (2750/2945) were earned in an older field.
+Next: profile v26's live losses (`scratchpad/live26_profile.py` → `live26_profile.log`, pool `replays/live26/`), v27 = V56
+byte-exact submitted 14:05 local for the lineage comparison (retires v25). 4 slots left today.
+- **Live classification of v26's 134 games vs ≥2200 opponents** (`scratchpad/live26_classify.py`, `live26_classified.json`,
+  replays in `replays/live26/`): 127 are clones of this chassis (82 with exactly our step-0 signature BUY 20 / SELL 15 / BUY_SEED
+  WHEAT 1 = demand/v56 lineage; 18 farm2945's BUY 20 / SELL 15; 10 V47/V48's BUY 7 / SELL 2). Record vs clones: <2400 31-18 (63%),
+  2400–2500 27-41 (40%), 2500+ 2-8. Vs the 7 non-clone adaptive farms 3-4. The 2400 band is a swamp of the same public files;
+  copies rated 2500+ beat us, so stronger variants (v56? private tweaks) exist above. In losses the rival sells more milk/strawberry/
+  wool/wheat and we dump more fertilizer → lost sale races. v27 = v56 byte-exact live since 14:05 (sub 56479438).
+- **64-seed head-to-head on the demand chassis** (`eval/chassis_check.py`, seeds 601–664, `scratchpad/chassis_check_demand_64.log`):
+  base vs itself 4-2 (58 ties), vs v56 8-56 (+14); **gen-11 elite** (`experiments/v28_demand_genome.json`) vs unmodified file
+  45-19 +500, vs v56 26-38 +271, all other relatives ≥ base (ALL 450-62 vs 387-67). Promoted as **v28 = sub 56481283** (15:35 local; `submissions/v28_demand_g11.py`
+  = demand file + constants block via `tools/build_chassis_sub.py`). Tuner run 2 (CHASSIS=demand FRONT_SEEDS=4, log
+  `evolve_chassis_demand2.log`) continues; any later elite must pass the same 64-seed check before it replaces v28.
+
+## 2026-09-23 16:30 — two corrections and a negative
+- **BUG (evaluation): `fair_env.apply()` was process-wide with no restore.** In every ProcessPoolExecutor that mixed fair-env
+  games (pass / agent-vs-agent) with replayed traces, workers kept the patched weed pass for later trace games → shop draws
+  differed from the recorded game → the trace opponent was unfaithful. Contaminated: `evolve_market.py` fitness and
+  `eval/pool_eval.py` trace buckets (pass job runs first in each worker), `frontier_cmp` ("demand 24/25 vs top" is WRONG),
+  the own-line pool numbers in general. Clean: `band_eval`, `pub_vs_pools`, `chassis_vs_top`, `hybrid_eval` traces (fair jobs
+  last), all `evolve_chassis` / `chassis_check` numbers (fair only). Fixed: `fair_env.restore()` + `is_applied()`; trace
+  branches now call restore(). Clean re-measurement vs the 25 top traces is in this section below.
+- **Hybrid (tape days 0–11, our market planner from day 12 or 16) = NEGATIVE**: band2900 9-31 (−15.8k), top 8-17, live clones
+  0-20 (−37k), vs demand/v56 0-8 (−39k); the pure chassis on the same games: 33-7 / 15-10 / 3-15 / 1-0 / 2-6. Our planner loses
+  ~30k over the second half relative to the tape. `kaggriculture/agents/hybrid.py` kept; do not resubmit this idea without a
+  much stronger second-half executor.
+- Clean re-measurement vs the 25 top traces (shipped env, `scratchpad/top_clean.py`): demand 15-10 +20.1k, v56 15-10 +20.5k,
+  farm2945 15-10 +20.4k. The three public files are equal against the top tier; the "24/25" earlier in this file is void.
+
+## 2026-09-23 20:15 — executor rebuild, live picture, hybrid search
+- **Live**: v28 (demand + tuned) 2245 after 81 games, v27 (V56) 2011 after 80, v26 (retired) 2378. All sub-2200 losses of v27/v28
+  are coin flips (−16…−2,000) vs COPIES of the same file (identical day-12 farms) → the copy swamp now spans 1800–2550.
+  Trace gate (`scratchpad/trace_gate.log`, 122 diverse traces): v28 genome 93-29 vs base 81-39 (live26 clones 32-18 vs 20-28).
+- **Tour executor** (`kaggriculture/agents/tour.py`, `executor="tour"` knob): fixed daily zone tours + need-based supplies. From
+  the tape's day-11 farm vs pass: tape 137k, auction hybrid 103k→106–113k after the wheat-carrier fixes (`feed_per_carrier`,
+  `pickup_value`: one carrier used to take the whole shed's wheat), tour hybrid 99k. Neither executor is the bottleneck; the
+  second-half deficit (~25k) is planner/market rules: animals unfed on some days → escapes (26→20), strawberries under-fertilized
+  (2–5 applications/day vs ~16 windows; `fert_reserve_mult` did not help), wheat tiles lapse, smaller carrot sprint.
+- **`experiments/evolve_hybrid.py`** (running, run 1, log `evolve_hybrid1.log`): search over the ~50 second-half knobs of the
+  hybrid (tape days 0–11 → our planner/executor), fitness = coins vs pass from the tape's day-11 farm on 3 seeds + margin vs the
+  tape (fair env). Target: ≥137k vs pass (the tape's own number). Tuner run 4 (`evolve_chassis_demand4.log`, trace-augmented
+  fitness) continues at 8 procs.
+- fair_env leak fixed (`restore()`); all trace evaluations since 16:30 are clean.
+- 21:50 hybrid search gen 53: vs pass 141k (tape 161k) on the 3 seeds, margin vs tape −14.7k (from −47k at gen 0). Full pools for
+  the gen-49 elite (`scratchpad/hybrid_eval_best.log`): band 9-31 −12k, top 8-17 −5k, live26 0-20 −31k, demand/v56 0-8 −27k (tape
+  on the same games: 33-7 / 15-10 / 3-15 / 1-0 / 2-6). Improving but far from parity; left running overnight (run 1, JOBS=12),
+  auto full-eval when tape-margin > 0 or gen 150. Tuner run 4 continues. v28 2238 @89, v27 2022 @84. 3 slots left today unused.
+
+## 2026-09-24 01:00 — hybrid search: dead end; tuner run 4 elite under the gate
+- Hybrid search plateaued: gen 53 → gen 152 moved the tape margin only −14.7k → −13.1k; full pools unchanged (band 9-31 −12.7k,
+  live26 0-20 −33k, demand/v56 0-8 −28.6k vs the tape's 33-7 / 3-15 / 1-0 / 2-6). Our planner's second half caps ~25–30k below the
+  tape against relatives whatever the executor. **Stopped.** The takeover idea needs the winners' second-half targets
+  (shop-conditioned table from the daily top-episodes dataset), not more knob search.
+- Tuner run 4 (trace-augmented fitness) gen-17 elite full check: mirror +768, v56 +611, all relatives ≥ base, traces 104/122
+  +8.5k. 64-seed gate vs base and vs the v28 genome running (`scratchpad/chassis_check_run4.log`).
+- v28 2227 @96 games (24-28 vs 2200–2400; v26 was 34-22 there two days ago), v27 2004 @97 (V56 lineage weaker live; dropped).
+  **v29 = sub 56493719** = byte-exact demand file again (identical to v26), submitted 01:05 local as a same-field control: over the next
+  hours v28 (tuned) vs v29 (base) climb through the same population → decides whether the tuned constants help live. 2 slots left today.
+- **64-seed gate** (`scratchpad/chassis_check_run4.log`): run-4 gen-17 elite ALL 498-14 +5.2k: mirror 59-5 +1,334, v56 57-7
+  +1,161, every other relative >= base; traces 104/122 +8.5k (base 81/122). v28 genome for comparison: mirror 45-19, v56 26-38.
+  -> **v30 = sub 56495224** (`submissions/v30_demand_g4_17.py`, genome `experiments/v30_demand_genome.json`, 52 constants) submitted
+  01:25 local. Active: v29 (base, sub 56493719) + v30 (tuned) in the same field -> the live A/B. 1 slot left today. Tuner run 4 continues.
+
+## 2026-09-24 07:00 — same-field A/B decided: tuned constants help live
+| | games | rating | vs <2200 | vs 2200-2400 |
+|---|---|---|---|---|
+| v30 tuned (sub 56495224) | 81 | **2244** (2194@60, 2249@80, climbing) | 54-11 | 10-6 |
+| v29 unmodified file (sub 56493719, = v26) | 79 | 2113 | 42-25 | 2-9 |
+The base file that reached 2378 two days ago plateaus ~2110 today: the copy swamp now reaches 1800, so ratings are only comparable
+within the same field/time. The offline 64-seed gate predicted v30 > base (59-5) and the ladder confirms it (+130 in the same field).
+**Direction:** the constants search is the only lever that has moved the ladder; it gets the CPU. Next: tuner with v30's constants as an
+extra reactive opponent (arms race vs our own best), same 64-seed gate (+ trace term) before any slot. Final picks by 09-30: the two
+strongest by gate + live plateau (currently v30, then v28/v26). Hybrid/tour/second-half work parked (see 01:00 entry).

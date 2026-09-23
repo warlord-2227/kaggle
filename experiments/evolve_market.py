@@ -57,9 +57,11 @@ BASE = {k: M.DEFAULT[k] for k in SPACE}
 
 def play(job):
     g, opp, seed = job
+    import fair_env
     if not opp.startswith("trace:"):
-        import fair_env; fair_env.apply()      # traces need the real env + their own seed to stay faithful
+        fair_env.apply()                        # agent-vs-agent / vs pass: same shops for both on a seed
     else:
+        fair_env.restore()                      # traces need the SHIPPED env + their own seed to stay faithful (workers are reused!)
         seed = trace_agent.seed_of(TRACE_POOL[int(opp.split(":")[1])][1])
     from kaggle_environments import make as mk
     from kaggriculture.agents import market

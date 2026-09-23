@@ -81,6 +81,8 @@ DEFAULT = dict(
     # day; yield grows only on watered days in the window, so harvest on the last window day AFTER watering;
     # the shed holds 100 units and the night drop discards the overflow)
     harvest_decay=1, harvest_late_hour=18, shed_guard=1, shed_cap=100, water_growth_mult=1.0,
+    # executor: "auction" (hourly coin-valued job auction, the original) or "tour" (fixed daily zone tours, tour.py)
+    executor="auction", feed_per_carrier=4, pickup_value=300, fert_reserve_mult=0.5, tour_freeze_hour=3, tour_deliver_hour=20, tour_fert_crops=1, tour_fert_min=2, tour_deliver_dist=3,
 )
 
 
@@ -280,7 +282,7 @@ def make(debug=False, **over):
                 age = day - t["planted_day"]
                 if (t["crop"] == "STRAWBERRY" and 7 <= age <= 15) or (t["crop"] == "MELON" and 4 <= age <= 10):
                     fert_demand += 1
-        reserve_f = 0 if endgame else min(30, S["fert_reserve"] + fert_demand // 2)
+        reserve_f = 0 if endgame else min(60, S["fert_reserve"] + int(fert_demand * S.get("fert_reserve_mult", 0.5)))   # fertilizer on a strawberry is worth far more than its sale
         held_total = sum(shed.values()) + sum(sum(i.values()) for i in invs)
         crowded = S["shed_guard"] and held_total > S["shed_cap"] - 5      # the night drop discards what does not fit
         for item in ("STRAWBERRY", "MILK", "WOOL", "MELON", "EGG", "TOMATO", "CARROT", "FERTILIZER", "WHEAT"):
@@ -352,8 +354,16 @@ def make(debug=False, **over):
                     q = min(short, 10, int((money - S["cash_floor"]) // P("FERTILIZER", 100)))
                     if q > 0: market.append(["BUY_PRODUCT", "FERTILIZER", q])
 
-        # ---- labour auction ---------------------------------------------------
+        # ---- labour ------------------------------------------------------------
         units = [tuple(me["farmer"])] + [tuple(h) for h in me["hands"]]
+        if S["executor"] == "tour":
+            from . import tour as _tour
+            ctx = dict(S=S, state=state, day=day, hour=hour, tiles=tiles, units=units, invs=invs, shed=shed, seeds=seeds, plan=plan,
+                       planned=planned, endgame=endgame, P=P, n_st=n_st, held=held, owned=owned)
+            f_op, h_ops = _tour.execute(ctx)
+            h_ops = (h_ops + [["PASS"]] * len(me["hands"]))[:len(me["hands"])]
+            return {"farmer": f_op, "hands": h_ops, "market": market[:10]}
+        # ---- labour auction ---------------------------------------------------
         n = len(units)
         p_st, p_mel, p_wh = P("STRAWBERRY", 120), P("MELON", 250), P("WHEAT", 25)
         p_milk, p_wool, p_egg = P("MILK", 150), P("WOOL", 200), P("EGG", 50)
@@ -461,8 +471,12 @@ def make(debug=False, **over):
         fert_jobs = sum(1 for v, _, op, nd in jobs if op[0] == "FERTILIZE")
         carriers_w = sum(1 for i in invs if i.get("WHEAT", 0) > 0)
         carriers_f = sum(1 for i in invs if i.get("FERTILIZER", 0) > 0)
-        if hungry and shed.get("WHEAT", 0) > 0 and carriers_w < max(1, hungry // 4):
-            jobs.append((240, SHED, ["PICKUP", "WHEAT", min(shed["WHEAT"], max(2, hungry))], "SHEDW"))
+        carriers_needed = max(1, -(-hungry // S.get("feed_per_carrier", 4)))          # one carrier per ~4 hungry animals
+        if hungry and shed.get("WHEAT", 0) > 0 and carriers_w < carriers_needed:
+            # split the shed's wheat across carriers: one unit taking everything leaves the others unable to feed
+            per = max(2, -(-hungry // carriers_needed))
+            # the trip is worth the feeds it enables (each unfed animal forfeits its production bonus), not a flat 240
+            jobs.append((S.get("pickup_value", 300) * min(per, hungry), SHED, ["PICKUP", "WHEAT", min(shed["WHEAT"], per)], "SHEDW"))
         if fert_jobs >= 1 and shed.get("FERTILIZER", 0) >= 1 and carriers_f < max(1, fert_jobs // 5) and not endgame:
             jobs.append((1.5 * p_st, SHED, ["PICKUP", "FERTILIZER", min(shed["FERTILIZER"], 6)], "SHEDF"))
 

@@ -25,6 +25,12 @@ OPP_FILES = {"mirror": CHASSIS, "farm2945": PUB_DIR + "farm2945_v9_4.py",
 OPP_FILES = {k: v for k, v in OPP_FILES.items() if os.path.exists(v) and (k == "mirror" or v != CHASSIS)}
 # per generation: mirror on 3 seeds + 4 other bots on 1 seed each (paired seeds across the population)
 MIRROR_SEEDS, OTHER_PER_GEN = 3, 4
+import trace_agent
+def _pool(**kw):
+    try: return trace_agent.pool(**kw)
+    except FileNotFoundError: return []
+TRACES = _pool(folder="mid") + _pool(folder="band2900") + _pool(folder="live26")   # diverse frozen farms, 1500-2960, incl. live clones
+TRACES_PER_GEN = int(os.environ.get("TRACES_PER_GEN", 3))
 
 SPACE = {  # module constant: (kind, lo, hi)   -- ranges bracket the shipped values
     "V9_COURIER_FROM_HOUR": ("int", 6, 20),
@@ -95,9 +101,14 @@ def load_opp(name):
 
 def play(job):
     g, opp, seed = job
-    import fair_env; fair_env.apply()
+    import fair_env
     from kaggle_environments import make as mk
-    a = make_agent(g); b = load_opp(opp)
+    a = make_agent(g)
+    if opp.startswith("trace:"):
+        fair_env.restore()                     # a recorded opponent is faithful only under the shipped shop draw
+        name, path, idx, rating = TRACES[int(opp.split(":")[1])]; b = trace_agent.make(path, idx); seed = trace_agent.seed_of(path)
+    else:
+        fair_env.apply(); b = load_opp(opp)
     env = mk("kaggriculture", configuration={"episodeSteps": 720, "seed": seed}); env.run([a, b])
     f = env.steps[-1]; return f[0]["reward"], f[1]["reward"]
 
@@ -126,14 +137,17 @@ def evaluate(pop, jobs_of, ex):
 
 
 def fullcheck(genome, ex, seeds=range(601, 609)):
-    """Every reactive opponent on 8 fixed seeds (mirror included)."""
-    plan = [(o, s) for o in OPP_FILES for s in seeds]
+    """Every reactive opponent on 8 fixed seeds (mirror included) + every diverse trace (no-regression term)."""
+    plan = [(o, s) for o in OPP_FILES for s in seeds] + [("trace:%d" % i, 0) for i in range(len(TRACES))]
     v = evaluate([genome], lambda g: plan, ex)[0]
+    tr = [m for o, m in v["by_opp"].items() if o.startswith("trace:")]
+    if tr: v["traces"] = (sum(m > 0 for m in tr), len(tr), st.mean(tr)); v["by_opp"] = {o: m for o, m in v["by_opp"].items() if not o.startswith("trace:")}
     return v
 
 
 def fmt(v):
-    return f"margin {v['margin']:+,.0f} wins {v['wins']:.2f} ours {v['ours']:,.0f} " + " ".join(f"{o}:{m:+,}" for o, m in v["by_opp"].items())
+    tr = f" | traces {v['traces'][0]}/{v['traces'][1]} {v['traces'][2]:+,.0f}" if "traces" in v else ""
+    return f"margin {v['margin']:+,.0f} wins {v['wins']:.2f} ours {v['ours']:,.0f} " + " ".join(f"{o}:{m:+,}" for o, m in v["by_opp"].items()) + tr
 
 
 if __name__ == "__main__":
@@ -155,8 +169,10 @@ if __name__ == "__main__":
             # the frontier bots (they beat the unmodified chassis 8-0) are in every generation; two others rotate
             frontier = [o for o in ("demand", "v56") if o in OPP_FILES]
             picks = frontier + rng.sample([o for o in others if o not in frontier], min(OTHER_PER_GEN - len(frontier), len(others)))
-            oseed = rng.randrange(10**6); oseed2 = rng.randrange(10**6)
-            plan = [("mirror", s) for s in seeds] + [(o, oseed) for o in picks] + [(o, oseed2) for o in frontier]
+            oseed = rng.randrange(10**6)
+            fseeds = [rng.randrange(10**6) for _ in range(int(os.environ.get("FRONT_SEEDS", 1)))]   # extra seeds vs the frontier bots
+            plan = [("mirror", s) for s in seeds] + [(o, oseed) for o in picks] + [(o, s) for o in frontier for s in fseeds]
+            if TRACES: plan += [("trace:%d" % i, 0) for i in rng.sample(range(len(TRACES)), min(TRACES_PER_GEN, len(TRACES)))]
             children = []
             for _ in range(LAM):
                 p = rng.choice(elites)["genome"]; q = rng.choice(elites)["genome"]
