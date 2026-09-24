@@ -340,3 +340,29 @@ still climbing. Final-pick order today: v31, v30. Tuner run 6 (target v31) conti
   (`submissions/v32_demand_g6_29.py`, genome `experiments/v32_demand_genome.json`). Active: v31 + v32 (same-field A/B); v30 retired
   at 2329 @134. v31 at submit: 2507 @71. 4 slots left in this UTC day. Tuner run 7 started with SELF_GENOME = v32
   (`evolve_chassis_demand7.log`); gates auto-armed vs v32.
+- 22:30: run-7 gen-17 elite vs v32: self 60-4 +574, but mirror 61-3 +1,536 (v32: 64-0 +1,687) and v56 61-3 +1,301 (v32: 59-5
+  +1,385), traces 105/122 (v32: 106). Beats our own elite while slipping vs the base file → arms-race overfitting risk. Promotion rule
+  tightened: candidate must beat the current best head-to-head AND be ≥ it (within noise, −100) vs mirror AND v56 — this one fails.
+  Live: v31 2526 @91 (plateau ~2500–2530), v32 2381 @48 (v31 was 2402 @40). Run 7 continues; gen-29 gate armed.
+- 23:40 **Unreadability layer** (`layers/unreadable_block.py`: per-item jittered race horizon from a private RNG; optional SELL
+  slot shuffle) vs mirror/v56/v32 on 8 seeds: jitter 8–16 → mirror +68/+71, v56 −118/−54 (base −168), v32 −1.6k (unchanged):
+  negligible. Slot shuffle → −1.8k to −3.4k everywhere: **SELL slot order is worth ~2k/game** (ORDERPRI2/v44y already optimise it).
+  Readability is not the copies' edge; timing jitter is not a lever. Negative, recorded.
+- 23:20 **v32 same-field A/B**: at game 60 v32 2383 vs v31 2498 (v30 2194); now v32 2406 @64, v31 **2525 @96** (plateau), v30 2337.
+  v32's offline 39-25 over v31 did not show live → the arms race has hit the noise floor of the copy swamp. Promotion bar raised:
+  ≥ 42-22 vs **v31's** constants over 64 seeds AND mirror/v56 margins held. Final picks now: **v31**, then v32/v30.
+  Run 8 (SPAN_MULT=2, wider auto ranges; 10 of v32's constants were pinned at bounds) and run 7 continue; gates armed.
+
+## 2026-09-25 01:00
+- Run 7 gen-29 elite collapsed (mirror 19-45, self 3-61): its fitness was captured by one frozen trace beaten by +132k. Run 7 killed.
+  Fitness margins now clipped to ±10k per game (`MARGIN_CLIP`). Run 8 (wider ranges, JOBS=8) continues; run 9 started (same
+  config, rng 9, JOBS=8, clipped). Live: v31 2519 @101, v32 2433 @79. Final picks unchanged: v31 first.
+- 04:20 run-8 gen-11 elite (wider ranges, from v32+base): self 12-52, mirror 58-6 → not promoted; early generations of the wider space
+  are below v32, gate re-armed at gen 29. Live: v31 2526 @103, v32 2437 @82. Rating watch restarted.
+- 05:40 run-9 gen-11 elite: self 7-57 vs v31, mirror 52-12 → not promoted (wider-space runs still below the optimum). Live v31 2514 @116, v32 2447 @96.
+- 09:50 run-8 gen-29 elite (wider ranges): mirror 34-30, self 28-36, traces 87/122 → worse than v31; run 8 killed (the doubled
+  ranges let the search drift on a noisy sample). Run 9 continues (gate at gen 29). Live: v31 2501 @131, v32 2464 @110 (still
+  rising). The constants line is at its optimum ≈ v31/v32; final picks v31 + v32.
+- 10:45 run-9 gen-29 elite: self 6-58 vs v31 → both wider-range runs (8, 9) failed; killed. **Constants search converged at v31.**
+  Run 10 = narrow space (SPAN_MULT=1), rng 10, SELF=v31, clipped fitness, JOBS=16 — a cheap background try only.
+  Live: v31 2496 @135, v32 2453 @116. Final picks: v31 + v32. Next: confirm Kaggle's final-submission selection mechanism.

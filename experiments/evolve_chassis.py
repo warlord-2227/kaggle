@@ -59,10 +59,11 @@ def auto_space(path):
         k, v = m.group(1), m.group(2)
         if any(t in k for t in ("REPORT", "STATE", "CACHE", "STEP", "TURNS", "BOARD", "MAX_ORDERS", "CAPACITY", "FLOOR", "PRICE", "COST", "SIZE")): continue
         if v in ("True", "False"): sp[k] = ("int", 0, 1); bools.add(k); continue
+        mult = float(os.environ.get("SPAN_MULT", 1.0))          # widen the auto ranges (elites were pinned at the bounds)
         if "." in v:
-            x = float(v); span = max(0.5, abs(x)); sp[k] = ("float", (x - span) if x < 0 else max(0.0, x - span), x + span)
+            x = float(v); span = max(0.5, abs(x)) * mult; sp[k] = ("float", (x - span) if x < 0 else max(0.0, x - span), x + span)
         else:
-            x = int(v); span = max(2, abs(x)); sp[k] = ("int", (x - span) if x < 0 else max(0, x - span), x + span)
+            x = int(v); span = int(max(2, abs(x)) * mult); sp[k] = ("int", (x - span) if x < 0 else max(0, x - span), x + span)
     return sp, bools
 
 if CHASSIS_NAME != "farm2945":
@@ -136,7 +137,8 @@ def evaluate(pop, jobs_of, ex):
     for g in pop:
         js = jobs_of(g); r = res[i:i + len(js)]; i += len(js); by = {}
         for (o, s), (a, b) in zip(js, r): by.setdefault(o, []).append(a - b)
-        out.append(dict(genome=g, margin=st.mean(a - b for a, b in r), wins=sum(a > b for a, b in r) / len(r),
+        CLIP = float(os.environ.get("MARGIN_CLIP", 10000))    # one collapsed trace (+130k) must not steer the mean
+        out.append(dict(genome=g, margin=st.mean(max(-CLIP, min(CLIP, a - b)) for a, b in r), wins=sum(a > b for a, b in r) / len(r),
                         ours=st.mean(a for a, _ in r), by_opp={o: round(st.mean(v)) for o, v in by.items()}))
     return out
 
