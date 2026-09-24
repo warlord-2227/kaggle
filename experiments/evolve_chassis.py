@@ -23,6 +23,7 @@ OPP_FILES = {"mirror": CHASSIS, "farm2945": PUB_DIR + "farm2945_v9_4.py",
              "rhythm": PUB_DIR + "alperen_market_rhythm.py", "v48": PUB_DIR + "ahmed_v48.py", "v47": PUB_DIR + "ahmed_v47.py",
              "v56": PUB_DIR + "ahmed_v56.py", "shopwork": PUB_DIR + "shopwork_tetsutani.py"}
 OPP_FILES = {k: v for k, v in OPP_FILES.items() if os.path.exists(v) and (k == "mirror" or v != CHASSIS)}
+if os.environ.get("SELF_GENOME"): OPP_FILES["self"] = CHASSIS        # our tuned best plays as a reactive opponent (see load_opp)
 # per generation: mirror on 3 seeds + 4 other bots on 1 seed each (paired seeds across the population)
 MIRROR_SEEDS, OTHER_PER_GEN = 3, 4
 import trace_agent
@@ -94,7 +95,11 @@ def make_agent(genome, tag="cand"):
     return m.agent
 
 
+SELF_GENOME = os.environ.get("SELF_GENOME")        # e.g. experiments/v30_demand_genome.json: our own best as a reactive opponent
 def load_opp(name):
+    if name == "self" and SELF_GENOME:
+        g = json.load(open(SELF_GENOME if os.path.isabs(SELF_GENOME) else ROOT + SELF_GENOME)); g = g.get("genome", g)
+        return make_agent({**base_genome(), **{k: v for k, v in g.items() if k in SPACE}}, tag="self")
     m = _fresh(OPP_FILES[name], "opp_" + name)
     return [v for v in vars(m).values() if callable(v)][-1]   # Kaggle's last-callable rule
 
@@ -167,7 +172,7 @@ if __name__ == "__main__":
         while True:
             seeds = [rng.randrange(10**6) for _ in range(MIRROR_SEEDS)]
             # the frontier bots (they beat the unmodified chassis 8-0) are in every generation; two others rotate
-            frontier = [o for o in ("demand", "v56") if o in OPP_FILES]
+            frontier = [o for o in ("demand", "v56", "self") if o in OPP_FILES]
             picks = frontier + rng.sample([o for o in others if o not in frontier], min(OTHER_PER_GEN - len(frontier), len(others)))
             oseed = rng.randrange(10**6)
             fseeds = [rng.randrange(10**6) for _ in range(int(os.environ.get("FRONT_SEEDS", 1)))]   # extra seeds vs the frontier bots

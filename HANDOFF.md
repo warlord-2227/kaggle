@@ -306,3 +306,30 @@ within the same field/time. The offline 64-seed gate predicted v30 > base (59-5)
 **Direction:** the constants search is the only lever that has moved the ladder; it gets the CPU. Next: tuner with v30's constants as an
 extra reactive opponent (arms race vs our own best), same 64-seed gate (+ trace term) before any slot. Final picks by 09-30: the two
 strongest by gate + live plateau (currently v30, then v28/v26). Hybrid/tour/second-half work parked (see 01:00 entry).
+
+## 2026-09-24 09:15 — two more measured negatives on the 3000 question
+- **Rank-1 farms as tapes**: DSM's 28 recorded games replayed open-loop vs the reactive chassis on native seeds: 1-27; replayed
+  value 59k vs 116k recorded (`scratchpad/dsm_tape_test.py`). Adaptive farms cannot be taped; the route-library path is closed.
+- **Tomato swap of the tape's day-11 strawberry batch** (`layers/tomato_swap_block.py`, K=13): vs mirror 1-7 −7.9k, v56 1-7 −8.1k,
+  self(v30) 1-7 −8.6k, pass −17k mean (seed 601: −2.6k). Tomatoes worked (4 units/tile, 50 sold at $50–63) but the tape digs the
+  finished tiles on day 23 and never replants (13 idle tiles for 6 days) and its strawberry sale plan loses its lots. Negative.
+- Conclusion stands: no measured path to 3000 within the deadline; the tuned-chassis line (v30 lineage) is the final vehicle.
+
+## 2026-09-24 09:40 — v31 (run-5 elite) submitted; arms race continues
+- Gate (`scratchpad/chassis_check_run5.log`, 64 seeds): run-5 gen-11 elite vs v30's constants **57-6 +629**, mirror 61-3 +1,510
+  (v30: 59-5 +1,334), v56 57-7 +1,314 (v30: +1,161), other relatives equal, traces 105/122. -> **v31 = sub 56508691**
+  (`submissions/v31_demand_g5_11.py`, genome `experiments/v31_demand_genome.json`, 54 constants). Active: v30 + v31 (same-field
+  A/B of two tuned generations); v29 base control retired at ~2100. Live at submit: v30 2256 @90. No slots left in this UTC day.
+- Tuner run 6 started with SELF_GENOME = v31 (log `evolve_chassis_demand6.log`); gate for its elites = chassis_check vs v31 on 64 seeds
+  (auto-armed). Lesson for this file: never write HANDOFF via an unquoted heredoc (backticks execute).
+- 16:40: run-6 gen-11 elite vs v31: 30-34 +318 (mirror 60-4, v56 58-6) → does NOT clear the gate; constants line converging around
+  v31. Live: v31 2408 @45 (v30 was 2145 @40), v30 2328 @127. 5 slots available (new UTC day since 12:00 local); none spent.
+
+## 2026-09-24 17:35 — same-field A/B across three generations (rating at game 60)
+| | @20 | @40 | @60 | now | vs <2200 | vs 2200-2400 | vs 2400-2500 | vs 2500+ |
+|---|---|---|---|---|---|---|---|---|
+| v31 run-5 constants (sub 56508691) | 2290 | 2402 | **2498** | 2495 @63 | 19-0 | 9-5 | 16-9 | 3-2 |
+| v30 run-4 constants (sub 56495224) | 1868 | 2145 | 2194 | 2322 @131 | 57-12 | 41-21 | | |
+| v29 unmodified file (sub 56493719) | 2303 | 2105 | 2088 | 2109 @116 | 56-42 | 4-11 | 0-1 | |
+The offline 64-seed gate has predicted the live order every time (base < v30 < v31). v31 is above the bronze line (~2450) and
+still climbing. Final-pick order today: v31, v30. Tuner run 6 (target v31) continues; its gen-11 elite failed the gate (30-34).
