@@ -333,3 +333,10 @@ strongest by gate + live plateau (currently v30, then v28/v26). Hybrid/tour/seco
 | v29 unmodified file (sub 56493719) | 2303 | 2105 | 2088 | 2109 @116 | 56-42 | 4-11 | 0-1 | |
 The offline 64-seed gate has predicted the live order every time (base < v30 < v31). v31 is above the bronze line (~2450) and
 still climbing. Final-pick order today: v31, v30. Tuner run 6 (target v31) continues; its gen-11 elite failed the gate (30-34).
+
+## 2026-09-24 18:10 — v32 (run-6 gen-29 elite) submitted
+- Gate (`scratchpad/chassis_check_run6b.log`, 64 seeds): vs v31's constants **39-25 +440**, mirror 64-0 +1,687 (v31: 61-3 +1,510),
+  v56 59-5 +1,385 (v31: 57-7 +1,314), all other relatives >= v31, traces 106/122. -> **v32 = sub 56515072**
+  (`submissions/v32_demand_g6_29.py`, genome `experiments/v32_demand_genome.json`). Active: v31 + v32 (same-field A/B); v30 retired
+  at 2329 @134. v31 at submit: 2507 @71. 4 slots left in this UTC day. Tuner run 7 started with SELF_GENOME = v32
+  (`evolve_chassis_demand7.log`); gates auto-armed vs v32.
