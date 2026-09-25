@@ -366,3 +366,46 @@ still climbing. Final-pick order today: v31, v30. Tuner run 6 (target v31) conti
 - 10:45 run-9 gen-29 elite: self 6-58 vs v31 → both wider-range runs (8, 9) failed; killed. **Constants search converged at v31.**
   Run 10 = narrow space (SPAN_MULT=1), rng 10, SELF=v31, clipped fitness, JOBS=16 — a cheap background try only.
   Live: v31 2496 @135, v32 2453 @116. Final picks: v31 + v32. Next: confirm Kaggle's final-submission selection mechanism.
+
+## FINAL-SELECTION RULE (from the Overview → Evaluation page, read 2026-09-25 11:00)
+"Only the latest 2 submissions are tracked. The latest 2 submissions are also used for final leaderboard evaluation." At the
+deadline (2026-09-30 23:59 UTC) submissions lock; games continue ~2 weeks; a Bradley-Terry tournament on those episodes decides.
+→ There is NO manual pick. **The last two files submitted are the finals.** Currently v31 (sub 56508691, ~2500) + v32
+(sub 56515072, ~2455). Any new submission retires v31. Rule from here: submit ONLY a candidate that beats v31's constants ≥ 42-22
+over 64 seeds with mirror/v56 margins held; otherwise submit nothing more. If a strong one appears, submit it and, if v32 is then
+the weaker of the pair, consider re-submitting v31's file afterwards so the finals are {new, v31}.
+
+## 2026-09-25 12:00 — forum findings that change the plan
+- Thread "What actually predicted the ladder" (Avineesh, 09-24): final = Bradley-Terry on WIN/LOSS; at 2250+ the median gap is $177 and
+  78% of games are decided by < $1,000 → optimise paired WIN RATE, not margin (tuner fitness switched: wins first, margin tiebreak;
+  run 11, SELF=v31). A candidate must also win on the climb (<2000 band), not only in the target band. Kaggle staff (Tournament
+  Question thread): the BT fit uses **all episodes ever played between submissions still active at the end** → games v31/v32 play
+  now count; a strong agent gains from staying active; each new submission retires the older active one.
+  Their negatives: selling earlier −80k, splitting sales −60k, holding stock −2.3k. Their positive: repairing blocked actions +4.4k.
+  Timeout risk: first move of a 1 MB agent can take 300–400 ms; the 60 s overage bank forfeits the game (our v31 timing measured
+  below).
+- Thread "[Tool] byte-identical Rust simulator" (Debmalya, 09-25, Apache-2.0, github.com/debmalyaroy/kaggriculture-simulation):
+  official-engine port, 770 games/s engine-only, ~16x faster tournaments with Python agents, paired A/B (McNemar), tape tools.
+  Cloned to scratchpad `kaggsim/`; if it runs our agents, the 64-seed gate drops from ~10 min to ~1 min.
+- Code tab now (by score): V38 2625, V39 2621, V53 2597, V55 2596 (4d), Multi-Route 2584 (13h), Kaggricult-Man 2579 (1h; "sell
+  selected lots one turn earlier in likely mirrors, two if the rival pre-empts"), cha22 2568, Master Engine V3 2544. Copied the new
+  ones to `refagents/public/`; v31 vs each on 12 seeds running (`scratchpad/newpub_test.log`).
+- kaggsim (Rust simulator, binary in scratchpad `kaggsim/ds/kagg`, python pkg `kaggsim/`): fidelity confirmed on v31 vs demand
+  seed 601 (banks identical to the official engine: 108,010 / 112,752). Speed for OUR games: no gain (68 s vs 44 s under load): the
+  1 MB Python agents dominate per-turn cost, not the engine. Useful only for tape-vs-tape batches or as a paired-A/B harness. Parked.
+- v31 timing: import 0.48 s, first move 18 ms, slowest turn 0.6 s, ~4–5 s agent time per game (60 s overage budget) → no timeout risk.
+- 13:40 **New public lineage beats v31**: `cha22.py` (= multiroute = master-engine-v3 byte-identical, entry `ig_agent`, scores
+  2544–2584, published 12–16 h ago) vs v31: **7-5 −1,053** on 12 seeds. V53/V55 lose to v31 (10-2, 11-1). cha22 is now a frontier
+  opponent in the tuner (run 12: v56 + self + cha22 every generation, win-rate fitness). Its base strength vs demand/v56/farm2945
+  and the trace pools is being measured (`scratchpad/cha22_strength.log`) — if it dominates, the base question reopens.
+
+## 2026-09-25 14:20 — base switch to cha22
+- `cha22.py` strength (8 seeds, fair env): vs demand **8-0 +3,250**, vs v56 8-0 +3,116, vs farm2945 8-0 +4,046; top traces 14-11,
+  band2900 33-7 (equal to the older files on frozen farms; the gain is reactive). Same lineage (farm2945 v9/3 + EXP239–241 learned
+  two-policy route choice + later repairs), entry `ig_agent`, 7,482 lines, first move 2 ms, max turn 42 ms.
+- Tuner switched: `CHASSIS=cha22` (77 auto knobs, mirror not an exact tie — seat-asymmetric like v56), opponents demand/v56/**v31**
+  (our tuned demand file, `submissions/v31_demand_g5_11.py`) + rotating relatives + 4 traces, win-rate fitness. Run 1 log
+  `evolve_chassis_cha22_1.log`, files `experiments/evolve_chassis_cha22_*`. Gate: `CHASSIS=cha22 eval/chassis_check.py base <elite>`
+  over 64 seeds → v33 candidate. Demand tuner (run 12) killed.
+- Submission plan: v33 = tuned cha22 once gated (retires v31 → pair v32 + v33); then decide whether to re-submit v31's file as the
+  second final (pair v33 + v31-copy) — post-deadline games (~2 weeks) dominate the BT evidence, so late submission is acceptable.

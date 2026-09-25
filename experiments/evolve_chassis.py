@@ -14,14 +14,17 @@ from concurrent.futures import ProcessPoolExecutor
 
 PUB_DIR = ROOT + "refagents/public/"
 # which public file to tune: env CHASSIS=farm2945 (default) | demand | v56 | <path>
-CHASSIS_FILES = {"farm2945": PUB_DIR + "farm2945_v9_4.py", "demand": PUB_DIR + "tetsutani_demand_preserving.py", "v56": PUB_DIR + "ahmed_v56.py"}
+CHASSIS_FILES = {"farm2945": PUB_DIR + "farm2945_v9_4.py", "demand": PUB_DIR + "tetsutani_demand_preserving.py", "v56": PUB_DIR + "ahmed_v56.py",
+                 "cha22": PUB_DIR + "cha22.py"}
 CHASSIS_NAME = os.environ.get("CHASSIS", "farm2945")
 CHASSIS = CHASSIS_FILES.get(CHASSIS_NAME, CHASSIS_NAME)
 # reactive opponents: name -> file. "mirror" = the unmodified chassis.
 OPP_FILES = {"mirror": CHASSIS, "farm2945": PUB_DIR + "farm2945_v9_4.py",
              "demand": PUB_DIR + "tetsutani_demand_preserving.py", "firstline": PUB_DIR + "alperen_first_in_line.py",
              "rhythm": PUB_DIR + "alperen_market_rhythm.py", "v48": PUB_DIR + "ahmed_v48.py", "v47": PUB_DIR + "ahmed_v47.py",
-             "v56": PUB_DIR + "ahmed_v56.py", "shopwork": PUB_DIR + "shopwork_tetsutani.py"}
+             "v56": PUB_DIR + "ahmed_v56.py", "shopwork": PUB_DIR + "shopwork_tetsutani.py",
+             "cha22": PUB_DIR + "cha22.py", "v55": PUB_DIR + "ahmed_v55.py",
+             "v31": ROOT + "submissions/v31_demand_g5_11.py"}      # our tuned demand file as a reactive opponent
 OPP_FILES = {k: v for k, v in OPP_FILES.items() if os.path.exists(v) and (k == "mirror" or v != CHASSIS)}
 if os.environ.get("SELF_GENOME"): OPP_FILES["self"] = CHASSIS        # our tuned best plays as a reactive opponent (see load_opp)
 # per generation: mirror on 3 seeds + 4 other bots on 1 seed each (paired seeds across the population)
@@ -174,7 +177,7 @@ if __name__ == "__main__":
         while True:
             seeds = [rng.randrange(10**6) for _ in range(MIRROR_SEEDS)]
             # the frontier bots (they beat the unmodified chassis 8-0) are in every generation; two others rotate
-            frontier = [o for o in ("demand", "v56", "self") if o in OPP_FILES]
+            frontier = [o for o in ("demand", "v56", "self", "cha22", "v31") if o in OPP_FILES]
             picks = frontier + rng.sample([o for o in others if o not in frontier], min(OTHER_PER_GEN - len(frontier), len(others)))
             oseed = rng.randrange(10**6)
             fseeds = [rng.randrange(10**6) for _ in range(int(os.environ.get("FRONT_SEEDS", 1)))]   # extra seeds vs the frontier bots
@@ -187,7 +190,10 @@ if __name__ == "__main__":
                 children.append(mutate(base, rng))
             t0 = time.time(); scored = evaluate([e["genome"] for e in elites] + children, lambda g: plan, ex)
             for s in scored: log.write(json.dumps(dict(gen=gen, run=RUN, plan=plan, **s)) + "\n")
-            log.flush(); scored.sort(key=lambda s: -s["margin"]); elites = scored[:MU]; b = elites[0]
+            # the final ranking is a Bradley-Terry fit on WIN/LOSS; at the top 78% of games are decided by < $1,000, so rank by
+            # paired win rate first and use the (clipped) margin only as the tiebreak (FITNESS=margin restores the old order)
+            key = (lambda s: -s["margin"]) if os.environ.get("FITNESS") == "margin" else (lambda s: (-s["wins"], -s["margin"]))
+            log.flush(); scored.sort(key=key); elites = scored[:MU]; b = elites[0]
             json.dump(b, open(ROOT + f"experiments/evolve_chassis{TAG}_best.json", "w"), indent=1)
             base_s = next((s for s in scored if s["genome"] == BASE), None)
             print(f"gen {gen:>3} {time.time()-t0:5.0f}s best {fmt(b)} | base {round(base_s['margin']) if base_s else 'n/a'}", flush=True)

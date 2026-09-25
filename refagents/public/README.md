@@ -12,3 +12,7 @@ Added 2026-09-22 15:20 (all Apache-2.0 notebook outputs, byte-exact):
 ahmed_v47.py / ahmed_v48.py / ahmed_v56.py = ahmedberatozer/kaggriculture-v47-reactive-market-coordination (2686), -v48-clear-the-queue (2670), -v56-smarter-seeds-and-fertilizer (newest);
 tetsutani_demand_preserving.py = tetsutani/demand-preserving-turn-sale-timing (2750.2, best public on 09-19);
 alperen_first_in_line.py = alperen5252525/kaggriculture-first-in-line-stock-into-income (2746); alperen_market_rhythm.py = alperen5252525/kaggriculture-market-rhythm-sale-policy.
+
+Added 2026-09-25 (Code tab sorted by score; all Apache-2.0 notebook outputs): ahmed_v53.py (V53 Opening Signature, 2597),
+ahmed_v55.py (V55 One-Turn Market Race Edge, 2596), cha22.py (abhinav0370/cha22-agent, 2568), multiroute_flexonafft.py
+(flexonafft/kaggriculture-multi-route-farming-agent, 2584), masterengine3_guru.py (guruprasaathas111/kaggriculture-master-engine-v3, 2544).
