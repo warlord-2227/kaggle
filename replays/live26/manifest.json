@@ -1,0 +1,502 @@
+[
+ {
+  "ep": 111961594,
+  "opp_idx": 0,
+  "opp_sub": 56455230,
+  "opp_rating": 2576,
+  "opp_reward": 95140,
+  "our_reward": 86939,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111950548,
+  "opp_idx": 1,
+  "opp_sub": 56446381,
+  "opp_rating": 2538,
+  "opp_reward": 73053,
+  "our_reward": 72915,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111995182,
+  "opp_idx": 0,
+  "opp_sub": 56459968,
+  "opp_rating": 2533,
+  "opp_reward": 98142,
+  "our_reward": 81324,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112031856,
+  "opp_idx": 1,
+  "opp_sub": 56431695,
+  "opp_rating": 2520,
+  "opp_reward": 101963,
+  "our_reward": 101911,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111976939,
+  "opp_idx": 0,
+  "opp_sub": 56452911,
+  "opp_rating": 2516,
+  "opp_reward": 132416,
+  "our_reward": 131281,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111965297,
+  "opp_idx": 1,
+  "opp_sub": 56453160,
+  "opp_rating": 2515,
+  "opp_reward": 91237,
+  "our_reward": 91075,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112054993,
+  "opp_idx": 1,
+  "opp_sub": 56463646,
+  "opp_rating": 2513,
+  "opp_reward": 105631,
+  "our_reward": 104774,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111963015,
+  "opp_idx": 1,
+  "opp_sub": 56444787,
+  "opp_rating": 2512,
+  "opp_reward": 66109,
+  "our_reward": 65910,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111956256,
+  "opp_idx": 1,
+  "opp_sub": 56430094,
+  "opp_rating": 2510,
+  "opp_reward": 98953,
+  "our_reward": 98953,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111989926,
+  "opp_idx": 0,
+  "opp_sub": 56455669,
+  "opp_rating": 2504,
+  "opp_reward": 143752,
+  "our_reward": 143752,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112147697,
+  "opp_idx": 0,
+  "opp_sub": 56471033,
+  "opp_rating": 2489,
+  "opp_reward": 112373,
+  "our_reward": 107302,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111964162,
+  "opp_idx": 1,
+  "opp_sub": 56444603,
+  "opp_rating": 2488,
+  "opp_reward": 124413,
+  "our_reward": 124113,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112039896,
+  "opp_idx": 1,
+  "opp_sub": 56459207,
+  "opp_rating": 2488,
+  "opp_reward": 96888,
+  "our_reward": 96657,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112205065,
+  "opp_idx": 1,
+  "opp_sub": 56454617,
+  "opp_rating": 2485,
+  "opp_reward": 84203,
+  "our_reward": 83886,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112091275,
+  "opp_idx": 1,
+  "opp_sub": 56465250,
+  "opp_rating": 2484,
+  "opp_reward": 106529,
+  "our_reward": 105866,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112047283,
+  "opp_idx": 1,
+  "opp_sub": 56461319,
+  "opp_rating": 2483,
+  "opp_reward": 111351,
+  "our_reward": 110819,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112243314,
+  "opp_idx": 1,
+  "opp_sub": 56449990,
+  "opp_rating": 2482,
+  "opp_reward": 80450,
+  "our_reward": 80249,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111962590,
+  "opp_idx": 1,
+  "opp_sub": 56457519,
+  "opp_rating": 2482,
+  "opp_reward": 117289,
+  "our_reward": 117026,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112192077,
+  "opp_idx": 0,
+  "opp_sub": 56404324,
+  "opp_rating": 2482,
+  "opp_reward": 68853,
+  "our_reward": 68632,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112040325,
+  "opp_idx": 1,
+  "opp_sub": 56462843,
+  "opp_rating": 2481,
+  "opp_reward": 84000,
+  "our_reward": 83833,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111955407,
+  "opp_idx": 1,
+  "opp_sub": 56451133,
+  "opp_rating": 2477,
+  "opp_reward": 119228,
+  "our_reward": 118633,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112236493,
+  "opp_idx": 1,
+  "opp_sub": 56462588,
+  "opp_rating": 2475,
+  "opp_reward": 66507,
+  "our_reward": 66305,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112036096,
+  "opp_idx": 0,
+  "opp_sub": 56460477,
+  "opp_rating": 2473,
+  "opp_reward": 155204,
+  "our_reward": 155117,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111960768,
+  "opp_idx": 0,
+  "opp_sub": 56443832,
+  "opp_rating": 2473,
+  "opp_reward": 119854,
+  "our_reward": 117862,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112056587,
+  "opp_idx": 1,
+  "opp_sub": 56460462,
+  "opp_rating": 2470,
+  "opp_reward": 91229,
+  "our_reward": 90593,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111978349,
+  "opp_idx": 0,
+  "opp_sub": 56458854,
+  "opp_rating": 2469,
+  "opp_reward": 67642,
+  "our_reward": 67436,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111933668,
+  "opp_idx": 1,
+  "opp_sub": 56416148,
+  "opp_rating": 2458,
+  "opp_reward": 86474,
+  "our_reward": 85812,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112085943,
+  "opp_idx": 1,
+  "opp_sub": 56427351,
+  "opp_rating": 2458,
+  "opp_reward": 112441,
+  "our_reward": 112405,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 111949324,
+  "opp_idx": 1,
+  "opp_sub": 56454254,
+  "opp_rating": 2454,
+  "opp_reward": 105521,
+  "our_reward": 105187,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112152914,
+  "opp_idx": 1,
+  "opp_sub": 56457093,
+  "opp_rating": 2453,
+  "opp_reward": 82632,
+  "our_reward": 82418,
+  "our_sub": 56453495,
+  "result": "loss"
+ },
+ {
+  "ep": 112171745,
+  "opp_idx": 0,
+  "opp_sub": 56458722,
+  "opp_rating": 2526,
+  "opp_reward": 98512,
+  "our_reward": 98621,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111959639,
+  "opp_idx": 1,
+  "opp_sub": 56448162,
+  "opp_rating": 2501,
+  "opp_reward": 92269,
+  "our_reward": 92273,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 112038477,
+  "opp_idx": 0,
+  "opp_sub": 56452146,
+  "opp_rating": 2496,
+  "opp_reward": 104210,
+  "our_reward": 104778,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 112029625,
+  "opp_idx": 0,
+  "opp_sub": 56416614,
+  "opp_rating": 2489,
+  "opp_reward": 84475,
+  "our_reward": 84515,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111967583,
+  "opp_idx": 0,
+  "opp_sub": 56427398,
+  "opp_rating": 2469,
+  "opp_reward": 64061,
+  "our_reward": 64122,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111951690,
+  "opp_idx": 0,
+  "opp_sub": 56405653,
+  "opp_rating": 2463,
+  "opp_reward": 112040,
+  "our_reward": 112117,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111955095,
+  "opp_idx": 1,
+  "opp_sub": 56423463,
+  "opp_rating": 2463,
+  "opp_reward": 105243,
+  "our_reward": 105311,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 112080501,
+  "opp_idx": 0,
+  "opp_sub": 56453491,
+  "opp_rating": 2462,
+  "opp_reward": 106715,
+  "our_reward": 106755,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 112080272,
+  "opp_idx": 0,
+  "opp_sub": 56406295,
+  "opp_rating": 2453,
+  "opp_reward": 83329,
+  "our_reward": 83376,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111936967,
+  "opp_idx": 0,
+  "opp_sub": 56419310,
+  "opp_rating": 2452,
+  "opp_reward": 115878,
+  "our_reward": 115945,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111944865,
+  "opp_idx": 0,
+  "opp_sub": 56420384,
+  "opp_rating": 2451,
+  "opp_reward": 83717,
+  "our_reward": 83790,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 112012654,
+  "opp_idx": 1,
+  "opp_sub": 56405774,
+  "opp_rating": 2443,
+  "opp_reward": 74952,
+  "our_reward": 74980,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111952837,
+  "opp_idx": 1,
+  "opp_sub": 56419310,
+  "opp_rating": 2442,
+  "opp_reward": 68419,
+  "our_reward": 68578,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 112022988,
+  "opp_idx": 0,
+  "opp_sub": 56429777,
+  "opp_rating": 2441,
+  "opp_reward": 74084,
+  "our_reward": 74124,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111961884,
+  "opp_idx": 0,
+  "opp_sub": 56411161,
+  "opp_rating": 2436,
+  "opp_reward": 108858,
+  "our_reward": 108886,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111947109,
+  "opp_idx": 1,
+  "opp_sub": 56423603,
+  "opp_rating": 2433,
+  "opp_reward": 70867,
+  "our_reward": 70895,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111948812,
+  "opp_idx": 1,
+  "opp_sub": 56446374,
+  "opp_rating": 2433,
+  "opp_reward": 55010,
+  "our_reward": 55020,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111969840,
+  "opp_idx": 0,
+  "opp_sub": 56400719,
+  "opp_rating": 2428,
+  "opp_reward": 132874,
+  "our_reward": 132941,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 112205052,
+  "opp_idx": 0,
+  "opp_sub": 56410896,
+  "opp_rating": 2422,
+  "opp_reward": 106458,
+  "our_reward": 106498,
+  "our_sub": 56453495,
+  "result": "win"
+ },
+ {
+  "ep": 111938311,
+  "opp_idx": 1,
+  "opp_sub": 56414065,
+  "opp_rating": 2420,
+  "opp_reward": 78825,
+  "our_reward": 79013,
+  "our_sub": 56453495,
+  "result": "win"
+ }
+]

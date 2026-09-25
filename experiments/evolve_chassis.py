@@ -14,17 +14,27 @@ from concurrent.futures import ProcessPoolExecutor
 
 PUB_DIR = ROOT + "refagents/public/"
 # which public file to tune: env CHASSIS=farm2945 (default) | demand | v56 | <path>
-CHASSIS_FILES = {"farm2945": PUB_DIR + "farm2945_v9_4.py", "demand": PUB_DIR + "tetsutani_demand_preserving.py", "v56": PUB_DIR + "ahmed_v56.py"}
+CHASSIS_FILES = {"farm2945": PUB_DIR + "farm2945_v9_4.py", "demand": PUB_DIR + "tetsutani_demand_preserving.py", "v56": PUB_DIR + "ahmed_v56.py",
+                 "cha22": PUB_DIR + "cha22.py"}
 CHASSIS_NAME = os.environ.get("CHASSIS", "farm2945")
 CHASSIS = CHASSIS_FILES.get(CHASSIS_NAME, CHASSIS_NAME)
 # reactive opponents: name -> file. "mirror" = the unmodified chassis.
 OPP_FILES = {"mirror": CHASSIS, "farm2945": PUB_DIR + "farm2945_v9_4.py",
              "demand": PUB_DIR + "tetsutani_demand_preserving.py", "firstline": PUB_DIR + "alperen_first_in_line.py",
              "rhythm": PUB_DIR + "alperen_market_rhythm.py", "v48": PUB_DIR + "ahmed_v48.py", "v47": PUB_DIR + "ahmed_v47.py",
-             "v56": PUB_DIR + "ahmed_v56.py", "shopwork": PUB_DIR + "shopwork_tetsutani.py"}
+             "v56": PUB_DIR + "ahmed_v56.py", "shopwork": PUB_DIR + "shopwork_tetsutani.py",
+             "cha22": PUB_DIR + "cha22.py", "v55": PUB_DIR + "ahmed_v55.py",
+             "v31": ROOT + "submissions/v31_demand_g5_11.py"}      # our tuned demand file as a reactive opponent
 OPP_FILES = {k: v for k, v in OPP_FILES.items() if os.path.exists(v) and (k == "mirror" or v != CHASSIS)}
+if os.environ.get("SELF_GENOME"): OPP_FILES["self"] = CHASSIS        # our tuned best plays as a reactive opponent (see load_opp)
 # per generation: mirror on 3 seeds + 4 other bots on 1 seed each (paired seeds across the population)
 MIRROR_SEEDS, OTHER_PER_GEN = 3, 4
+import trace_agent
+def _pool(**kw):
+    try: return trace_agent.pool(**kw)
+    except FileNotFoundError: return []
+TRACES = _pool(folder="mid") + _pool(folder="band2900") + _pool(folder="live26")   # diverse frozen farms, 1500-2960, incl. live clones
+TRACES_PER_GEN = int(os.environ.get("TRACES_PER_GEN", 3))
 
 SPACE = {  # module constant: (kind, lo, hi)   -- ranges bracket the shipped values
     "V9_COURIER_FROM_HOUR": ("int", 6, 20),
@@ -52,10 +62,11 @@ def auto_space(path):
         k, v = m.group(1), m.group(2)
         if any(t in k for t in ("REPORT", "STATE", "CACHE", "STEP", "TURNS", "BOARD", "MAX_ORDERS", "CAPACITY", "FLOOR", "PRICE", "COST", "SIZE")): continue
         if v in ("True", "False"): sp[k] = ("int", 0, 1); bools.add(k); continue
+        mult = float(os.environ.get("SPAN_MULT", 1.0))          # widen the auto ranges (elites were pinned at the bounds)
         if "." in v:
-            x = float(v); span = max(0.5, abs(x)); sp[k] = ("float", (x - span) if x < 0 else max(0.0, x - span), x + span)
+            x = float(v); span = max(0.5, abs(x)) * mult; sp[k] = ("float", (x - span) if x < 0 else max(0.0, x - span), x + span)
         else:
-            x = int(v); span = max(2, abs(x)); sp[k] = ("int", (x - span) if x < 0 else max(0, x - span), x + span)
+            x = int(v); span = int(max(2, abs(x)) * mult); sp[k] = ("int", (x - span) if x < 0 else max(0, x - span), x + span)
     return sp, bools
 
 if CHASSIS_NAME != "farm2945":
@@ -85,19 +96,28 @@ def make_agent(genome, tag="cand"):
         if k == "OPEN_SELL":
             m.V9_OPENING_STEP0 = (("BUY_PRODUCT", "WHEAT", int(genome["OPEN_BUY"])), ("SELL", "WHEAT", int(v))); continue
         setattr(m, k, bool(v) if k in BOOLS else v)
-    return m.agent
+    return [v for v in vars(m).values() if callable(v)][-1]   # Kaggle's last-callable rule (cha22's entry is ig_agent, not `agent`)
 
 
+SELF_GENOME = os.environ.get("SELF_GENOME")        # e.g. experiments/v30_demand_genome.json: our own best as a reactive opponent
 def load_opp(name):
+    if name == "self" and SELF_GENOME:
+        g = json.load(open(SELF_GENOME if os.path.isabs(SELF_GENOME) else ROOT + SELF_GENOME)); g = g.get("genome", g)
+        return make_agent({**base_genome(), **{k: v for k, v in g.items() if k in SPACE}}, tag="self")
     m = _fresh(OPP_FILES[name], "opp_" + name)
     return [v for v in vars(m).values() if callable(v)][-1]   # Kaggle's last-callable rule
 
 
 def play(job):
     g, opp, seed = job
-    import fair_env; fair_env.apply()
+    import fair_env
     from kaggle_environments import make as mk
-    a = make_agent(g); b = load_opp(opp)
+    a = make_agent(g)
+    if opp.startswith("trace:"):
+        fair_env.restore()                     # a recorded opponent is faithful only under the shipped shop draw
+        name, path, idx, rating = TRACES[int(opp.split(":")[1])]; b = trace_agent.make(path, idx); seed = trace_agent.seed_of(path)
+    else:
+        fair_env.apply(); b = load_opp(opp)
     env = mk("kaggriculture", configuration={"episodeSteps": 720, "seed": seed}); env.run([a, b])
     f = env.steps[-1]; return f[0]["reward"], f[1]["reward"]
 
@@ -120,20 +140,24 @@ def evaluate(pop, jobs_of, ex):
     for g in pop:
         js = jobs_of(g); r = res[i:i + len(js)]; i += len(js); by = {}
         for (o, s), (a, b) in zip(js, r): by.setdefault(o, []).append(a - b)
-        out.append(dict(genome=g, margin=st.mean(a - b for a, b in r), wins=sum(a > b for a, b in r) / len(r),
+        CLIP = float(os.environ.get("MARGIN_CLIP", 10000))    # one collapsed trace (+130k) must not steer the mean
+        out.append(dict(genome=g, margin=st.mean(max(-CLIP, min(CLIP, a - b)) for a, b in r), wins=sum(a > b for a, b in r) / len(r),
                         ours=st.mean(a for a, _ in r), by_opp={o: round(st.mean(v)) for o, v in by.items()}))
     return out
 
 
 def fullcheck(genome, ex, seeds=range(601, 609)):
-    """Every reactive opponent on 8 fixed seeds (mirror included)."""
-    plan = [(o, s) for o in OPP_FILES for s in seeds]
+    """Every reactive opponent on 8 fixed seeds (mirror included) + every diverse trace (no-regression term)."""
+    plan = [(o, s) for o in OPP_FILES for s in seeds] + [("trace:%d" % i, 0) for i in range(len(TRACES))]
     v = evaluate([genome], lambda g: plan, ex)[0]
+    tr = [m for o, m in v["by_opp"].items() if o.startswith("trace:")]
+    if tr: v["traces"] = (sum(m > 0 for m in tr), len(tr), st.mean(tr)); v["by_opp"] = {o: m for o, m in v["by_opp"].items() if not o.startswith("trace:")}
     return v
 
 
 def fmt(v):
-    return f"margin {v['margin']:+,.0f} wins {v['wins']:.2f} ours {v['ours']:,.0f} " + " ".join(f"{o}:{m:+,}" for o, m in v["by_opp"].items())
+    tr = f" | traces {v['traces'][0]}/{v['traces'][1]} {v['traces'][2]:+,.0f}" if "traces" in v else ""
+    return f"margin {v['margin']:+,.0f} wins {v['wins']:.2f} ours {v['ours']:,.0f} " + " ".join(f"{o}:{m:+,}" for o, m in v["by_opp"].items()) + tr
 
 
 if __name__ == "__main__":
@@ -153,10 +177,12 @@ if __name__ == "__main__":
         while True:
             seeds = [rng.randrange(10**6) for _ in range(MIRROR_SEEDS)]
             # the frontier bots (they beat the unmodified chassis 8-0) are in every generation; two others rotate
-            frontier = [o for o in ("demand", "v56") if o in OPP_FILES]
+            frontier = [o for o in ("demand", "v56", "self", "cha22", "v31") if o in OPP_FILES]
             picks = frontier + rng.sample([o for o in others if o not in frontier], min(OTHER_PER_GEN - len(frontier), len(others)))
-            oseed = rng.randrange(10**6); oseed2 = rng.randrange(10**6)
-            plan = [("mirror", s) for s in seeds] + [(o, oseed) for o in picks] + [(o, oseed2) for o in frontier]
+            oseed = rng.randrange(10**6)
+            fseeds = [rng.randrange(10**6) for _ in range(int(os.environ.get("FRONT_SEEDS", 1)))]   # extra seeds vs the frontier bots
+            plan = [("mirror", s) for s in seeds] + [(o, oseed) for o in picks] + [(o, s) for o in frontier for s in fseeds]
+            if TRACES: plan += [("trace:%d" % i, 0) for i in rng.sample(range(len(TRACES)), min(TRACES_PER_GEN, len(TRACES)))]
             children = []
             for _ in range(LAM):
                 p = rng.choice(elites)["genome"]; q = rng.choice(elites)["genome"]
@@ -164,7 +190,10 @@ if __name__ == "__main__":
                 children.append(mutate(base, rng))
             t0 = time.time(); scored = evaluate([e["genome"] for e in elites] + children, lambda g: plan, ex)
             for s in scored: log.write(json.dumps(dict(gen=gen, run=RUN, plan=plan, **s)) + "\n")
-            log.flush(); scored.sort(key=lambda s: -s["margin"]); elites = scored[:MU]; b = elites[0]
+            # the final ranking is a Bradley-Terry fit on WIN/LOSS; at the top 78% of games are decided by < $1,000, so rank by
+            # paired win rate first and use the (clipped) margin only as the tiebreak (FITNESS=margin restores the old order)
+            key = (lambda s: -s["margin"]) if os.environ.get("FITNESS") == "margin" else (lambda s: (-s["wins"], -s["margin"]))
+            log.flush(); scored.sort(key=key); elites = scored[:MU]; b = elites[0]
             json.dump(b, open(ROOT + f"experiments/evolve_chassis{TAG}_best.json", "w"), indent=1)
             base_s = next((s for s in scored if s["genome"] == BASE), None)
             print(f"gen {gen:>3} {time.time()-t0:5.0f}s best {fmt(b)} | base {round(base_s['margin']) if base_s else 'n/a'}", flush=True)

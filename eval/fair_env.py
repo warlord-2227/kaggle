@@ -15,6 +15,8 @@ noise is symmetric between the two players.
 """
 from kaggle_environments.envs.kaggriculture import kaggriculture as K
 
+_ORIGINAL_SPAWN_WEEDS = K._spawn_weeds   # captured at import, before any apply()
+
 
 def _spawn_weeds_fixed_consumption(farm, board_size, weed_chance, rng):
     for y in range(board_size):
@@ -26,3 +28,13 @@ def _spawn_weeds_fixed_consumption(farm, board_size, weed_chance, rng):
 
 def apply():
     K._spawn_weeds = _spawn_weeds_fixed_consumption
+
+
+def restore():
+    """Undo apply(). REQUIRED before any replayed-trace game in a worker process that ran a fair-env game:
+    the patch is process-wide and a recorded opponent is only faithful under the shipped shop draw."""
+    K._spawn_weeds = _ORIGINAL_SPAWN_WEEDS
+
+
+def is_applied():
+    return K._spawn_weeds is _spawn_weeds_fixed_consumption
