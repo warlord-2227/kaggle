@@ -1,416 +1,120 @@
-# Kaggriculture — session handoff (2026-09-22, 12:10 local / 00:10 UTC)
+# Kaggriculture — session handoff (2026-09-25, 19:20 local / 07:20 UTC)
 
+Read this first; `HANDOFF_LOG.md` is the full chronological log (2026-09-22 → 09-25) with every measurement.
 Competition: https://www.kaggle.com/competitions/kaggriculture (2-player farming sim, 720 turns, most coins wins).
-Deadline 2026-09-30. 5 submissions per **UTC** day (local = UTC+12, quota resets 12:00 local). Only the latest 2
-submissions play. Account: IWA_setu (user `sdcarson`), token in `~/.kaggle/access_token`.
-Doc for the user (tabs Plan / Objective model / …): https://claude.ai/code/artifact/9249d30d-43a8-49ba-9de4-53a99f7aced3
-Repo: `/home/iwa/working/kaggle`, branch `agent/livestock-v6`, last pushed commit `23a6039` (v22). **Uncommitted since:
-market.py changes (opp-aware Cournot, NPV herd mode, geese floor, dynamic fert reserve…), eval/trace_agent.py, evolve_market.py
-fitness changes, v23 files, replay pools. The user asked for no commits on the evening of 09-21; ask before committing.**
+**Deadline 2026-09-30 23:59 UTC.** 5 submissions per UTC day (local = UTC+12, quota resets 12:00 local).
+Account IWA_setu (user `sdcarson`), token `~/.kaggle/access_token`. Repo `/home/iwa/working/kaggle`, branch `agent/livestock-v6`,
+PR #2 → main: https://github.com/warlord-2227/kaggle/pull/2 (last commit `4442889`, pushed). Engine `kaggle-environments` 1.32.7 (current).
 
-## Where we stand
+## 1. The rules that decide everything (verified on the Overview → Evaluation page and by Kaggle staff in the forum)
 
-| Sub | id | Agent | Rating (games) |
-|---|---|---|---|
-| v17 | 56404036 | grove (fixed strawberry plan + labour auction) | 659 (32) — inactive |
-| v20 | 56413854 | grove, search genome | 640 (32) — inactive |
-| v21 | 56420053 | **market** (demand-driven), search round 1 | 652 (36) — inactive |
-| v22 | 56423303 | market, search round 2 (vs v21) | **709 (35)** — active |
-| v23 | 56446174 | market, gen-53 genome tuned vs replayed real opponents | submitted 00:02 UTC 09-22 — active, no rating yet |
+- **Only the latest 2 submissions are tracked, and they are the final pair.** There is no manual selection. Each new submission
+  retires the older of the two active ones. Submit the agent you want to keep LAST.
+- At the deadline submissions lock; games continue ~2 weeks; a **Bradley-Terry fit on WIN/LOSS** over all episodes ever played
+  between submissions still active decides the final leaderboard. Margin is irrelevant; at 2250+ the median gap is $177 and 78%
+  of games are decided by < $1,000 → optimise paired win rate. Post-deadline games dominate the evidence, so a late submission is
+  fine; a retired submission's history is lost.
+- Live rating: new submissions start at 600, need 40–70 games to settle, overshoot early; only the band where you win ~50% is
+  your level. Ratings are comparable only for submissions climbing through the same field at the same time.
 
-Ladder scale: 9,724 teams, median 771. 1000 ≈ rank 4,050 (top 42%), 1500 ≈ top 27%, bronze (rank 941) ≈ 2,450, top-10 ≈ 3,000.
-Rank-1 "DSM" (sub 56401245): 115–3, median 110k vs 3000-rated peers.
+## 2. Where we stand
 
-## Agents (kaggriculture/agents/)
+| sub | file | what | live now | note |
+|---|---|---|---|---|
+| **v31** 56508691 | `submissions/v31_demand_g5_11.py` | demand-preserving public file + search-tuned constants (run 5) | **2444 @ ~140 games** (peak 2526) | **active, final #1** |
+| **v32** 56515072 | `submissions/v32_demand_g6_29.py` | same + run-6 constants | 2430 @ ~120 | active, final #2 |
+| v30 56495224 | `v30_demand_g4_17.py` | run-4 constants | 2337 (retired) | |
+| v29 56493719 | `v29_demand_base_again.py` | unmodified demand file (same-field control) | 2109 (retired) | |
+| v26 56453495 | `v26_demand_base.py` | unmodified demand file, 2 days earlier | 2378 (retired) | field was weaker then |
+| v23 56446174 | our own market agent | 783 | | own line parked |
 
-- `market.py` — current line. Demand-driven: each unlocked town shop buys 6 units/day of each product it lists (12 if
-  single-product), town centre 1/day, nothing buys melon/fertilizer; product lines (cows/sheep/geese/strawberry/wheat/
-  carrot/tomato) sized to that drain × knobs. Labour = grove's coin-priced auction (jobs valued in coins, greedy match by
-  value/(1+dist), stay-and-finish on a tile, bundled tile values, deliver-to-shed job, idle = PASS). Opening: cows+3 sheep,
-  10 wheat, melon lump on day 10; herd bought whenever cash lands; carrot/wheat sprint late. Knobs in `DEFAULT`.
-  Flags that exist but are OFF by default and measured negative: `herd_npv` (NPV herd rule), `zone_mode="kmeans"`,
-  `match="job"/"optimal"`, `commit`, `harvest_full`, `opp_weight` (Cournot subtraction; search sets ~0.1–0.2).
-- `grove.py` — previous line (v17–v20). `ranch.py` (v6–v16), `schedule.py` (dead end), `crop.py`, `farm.py`.
-- Build a submission: `.venv/bin/python tools/build_submission.py market --header tools/header_vN.txt --config "$(cat cfg.txt)"`
-  where cfg.txt is `k=v, k=v…` from the genome (see how v23 was built in the transcript / memory). Snapshots in `submissions/`.
-- Submit: `.venv/bin/kaggle competitions submit -c kaggriculture -f submissions/vN.py -m "…"`. A 400 = quota exhausted.
-  Scheduled submit pattern: `scratchpad/submit_v23.sh` (waits for UTC day rollover, retries).
+Same-field A/B at game 60: v31 2498 / v30 2194 / v29 (base) 2088 → the constants search moved the ladder +300–400 over the
+unmodified file; v32 vs v31 was inside the noise (2383 vs 2498 @60). Bronze line ≈ 2450; 3000+ needs a different species
+(see §5). **5 submission slots are available today (UTC day since 12:00 local); none spent.**
 
-## Evaluation (the important part)
+## 3. The ladder, as measured
 
-- `eval/fair_env.py` — patches the shop-draw RNG so two agents on the same seed get the same shops (use for agent-vs-agent
-  and vs pass). **Do NOT use with replayed traces.**
-- `eval/trace_agent.py` — replays a recorded ladder opponent open-loop. `pool(min_rating, folder)` lists
-  `replays/pool` (50 opponents rated 640–1033 that beat us; 34 rated 700+) or `replays/top` (25 opponents rated 2938–3197
-  from rank-1's games). Each trace **must run on its own seed** (`seed_of(path)` = replay `info.seed`) in the **real env**.
-  Fidelity is decent (e.g. the 1033 opponent replays 125k vs 127k recorded) but traces don't react to us.
-- Standard verification of a candidate genome (what gated v23): (1) full pools on native seeds: ladder 34 + top 25;
-  (2) fair-env: vs previous candidate (6–8 seeds), vs pass (4), glut seeds 9002/9006 (no strawberry shop → price 128→16).
-  Reference numbers, gen-53/v23: ladder 29/34 (+12.7k), top 9/25 (−3.8k), held-out(<700) 15/16, 146k vs pass, 110k glut.
-  v22: ladder 13/34 (−3.4k).
+- 1800–2550 is a swamp of copies of the public route-tape chassis (127 of v26's 134 opponents ≥2200; 82 with our exact opening).
+  Games between copies are decided by sale races and SELL-slot order (±$1k). Copies rated 2500+ beat v26 8-2.
+- 2500–2960 = adaptive farms (diverse; ~10 tomato tiles d14–20, strawberries wound down from d20, 25–30 wheat late). The
+  top-10 beat that band 17-7 by +5k. Frozen replays of them lose to the chassis 33-7; live they win → their edge is reaction.
+- **The public frontier moves every few days.** Score order on the Code tab now: V38 2625, V39 2621, V53 2597, V55 2596,
+  Multi-Route 2584, Kaggricult-Man 2579, cha22 2568, Master Engine V3 2544. `cha22.py` (= Multi-Route = Master Engine V3,
+  byte-identical, entry `ig_agent`, 7,482 lines, same lineage + EXP239–241 learned route choice) beats the demand file **8-0
+  +3.2k**, V56 8-0, farm2945 8-0 and our v31 **7-5 −1.0k** → it is the new base (§4).
+
+## 4. Current work: constants search on the cha22 base → v33
+
+- Tuner: `experiments/evolve_chassis.py` (`CHASSIS=cha22`, 77 auto-derived knobs = the file's top-level numeric/bool constants,
+  applied by setattr on a fresh import; `make_agent` returns the LAST callable — bug fixed 09-25 18:05, all earlier cha22 numbers
+  void). Fitness = paired WIN RATE (margin tiebreak, clipped ±10k) vs mirror ×3 seeds + demand/v56/**v31** ×3 seeds + 2 rotating
+  relatives + 4 diverse frozen traces (`replays/{mid,band2900,live26}`, shipped env via `fair_env.restore()`).
+- Running now: run 3 (`JOBS=16`, log scratchpad `evolve_chassis_cha22_3.log`, gen ~8, +1.4k vs demand, +0.1k vs v31 so far) and
+  run 4 (`JOBS=6`, `evolve_chassis_cha22_4.log`). Elites: `experiments/evolve_chassis_cha22_best.json`, full checks every 6 gens
+  `experiments/evolve_chassis_cha22_full_<run>_<gen>.json`.
+- **Gate before any submission**: `CHASSIS=cha22 .venv/bin/python eval/chassis_check.py base <elite.json> --seeds 601-664 --jobs 8`
+  (64 seeds × 11 reactive opponents incl. v31/v55/cha22-mirror). Promote only if the elite beats the base head-to-head
+  (≥ 42-22) and holds every other opponent's margin; the same 64-seed gate predicted the live order base < v30 < v31 correctly and
+  correctly flagged v32 vs v31 as noise (39-25).
+- Build/submit: `.venv/bin/python tools/build_chassis_sub.py cha22 <elite.json> submissions/v33_cha22_<tag>.py --tag "v33 ..."`
+  (appends a constants block to the byte-exact public file, Apache-2.0 notices kept), verify with 2 seeds that the file and
+  `make_agent(genome)` give identical rewards (see the v30–v32 build cells in HANDOFF_LOG), then
+  `.venv/bin/kaggle competitions submit -c kaggriculture -f <file> -m "..."`. Submitting v33 retires v31 → pair v32 + v33; if v33 is
+  clearly the best, consider re-submitting `submissions/v31_demand_g5_11.py` afterwards so the pair is v33 + v31-copy (order: the
+  one to keep goes last).
+- Live monitoring: `tools/watch_rating.sh <ids…>` (40 × 10 min; restart when it ends — it is NOT running now),
+  `tools/collect_episodes.sh` (running, saves ListEpisodes JSON to `analysis/data/live/`), same-field A/B report
+  scratchpad `ab_report.py` (edit the ids at the bottom), classifier `live26_classify.py` (clone vs adaptive by day-12 farm).
+
+## 5. What was measured and rejected (do not redo; numbers in HANDOFF_LOG.md)
+
+- Our own agents (`kaggriculture/agents/market.py` demand-driven planner + coin-priced labour auction, `tour.py` zone-tour
+  executor, `hybrid.py` tape days 0–11 → our planner): ceiling ~800 live; from the tape's own day-11 farm vs a passive opponent
+  the tape makes 137k, ours 106–113k with either executor; the hybrid knob search (`evolve_hybrid.py`, 150 gens) plateaued at
+  −13k vs the tape. Executor bugs fixed on the way (carrot/wheat decay timing, shed overflow, wheat-carrier split) are in market.py.
+- On the public chassis: opening quantities (20/15 optimal), `_ALT_MODE`, clone-gate blinding (7/8 ties), hand-permutation
+  (collapses the tape), race-horizon jitter (+50–100, noise), SELL-slot shuffle (−2k → slot order matters, already optimised by
+  ORDERPRI2/v44y), tomato swap of the day-11 strawberry batch (−8k: the tape digs finished tiles and never replants), rank-1's
+  farms replayed as tapes (1-27; adaptive farms cannot be taped), wider search ranges (drift), arms race vs our own elite only
+  (overfits; keep base/v56 margins in the gate).
+- Forum-measured by others: selling earlier −80k, splitting sales −60k, holding stock −2.3k; RL reaches silver at best (rank 28,
+  macro PPO + BC, 300k games); behaviour cloning at 99% agreement scores ~0.
+- Evaluation pitfalls fixed: `fair_env.apply()` leaked into replayed traces in shared workers (now `restore()` in every trace
+  branch); mean-margin fitness captured by one collapsed trace (+130k) → clipped; the `agent` attribute vs last-callable bug above.
+
+## 6. Tooling map
+
+- `refagents/public/` — Apache-2.0 public agents (README lists sources/scores): farm2945_v9_4, tetsutani_demand_preserving,
+  ahmed_v47/v48/v53/v55/v56, alperen_first_in_line (=V48), alperen_market_rhythm, shopwork_tetsutani, **cha22**,
+  multiroute_flexonafft (=cha22), masterengine3_guru (=cha22). Load with the last-callable rule.
+- `eval/chassis_check.py` (head-to-head gate), `eval/pool_eval.py` (own-line pools), `eval/trace_agent.py` (frozen replays, native
+  seed, shipped env), `eval/fair_env.py` (same shops for both on a seed; `apply()`/`restore()`), `tools/build_pool.py` (trace pools
+  from the episode API; 429 → 8 s spacing), `tools/build_chassis_sub.py`, `tools/collect_episodes.sh`, `tools/watch_rating.sh`.
+- Pools (manifests committed, replays ignored): `replays/pool` (ladder 640–1033), `replays/mid` (1500–2500), `replays/top`
+  (2938–3197, rank-1's games), `replays/band2900` (2780–2960 from top-10 games), `replays/live26` (v26's live games), `replays/live28`.
+- Data: `analysis/data/live/*.json` (collector), leaderboard capture with teamId+submissionId for all 9,703 teams in the old
+  scratchpad (`/tmp/claude-1000/-home-iwa-working-kaggle/aec4845d-.../scratchpad/leaderboard_resp.network-response`),
+  `kaggle/kaggriculture-episodes-index` (daily top-episode datasets, ~640 replays/day).
+- Rust simulator (`scratchpad/kaggsim/ds/kagg`, Apache-2.0, byte-identical to 1.32.7): verified, but no speed gain for our
+  1 MB Python agents; useful only for tape batches / paired A/B.
 - Episode API (no auth): `POST https://www.kaggle.com/api/i/competitions.EpisodeService/ListEpisodes {"submissionId": N}`;
-  replays: `curl -L https://www.kaggleusercontent.com/episodes/<id>.json`. Team → submission id: leaderboard page,
-  "View episodes" button → URL `?submissionId=`. Leaderboard CSV: `kaggle competitions leaderboard --download`.
+  replays `https://www.kaggleusercontent.com/episodes/<id>.json`.
 
-## Search
+## 7. Operational gotchas
 
-- `experiments/evolve_market.py` — (μ+λ)=(4+12), ~55 knobs incl. the new ones. Fitness = margin vs 8 rotating traces from
-  `TRACE_POOL` (34 ladder + 25 top) + one pass game, 2 seeds (trace seeds are native). Log
-  `experiments/evolve_market_log.jsonl`, best `experiments/evolve_market_best.json`. Elites seeded from v23/v22 genomes.
-  Run: `(. .venv/bin/activate && nohup python experiments/evolve_market.py <rngseed> > scratchpad/evolve_marketN.log 2>&1 &)`.
-  A run was alive at handoff (arg `8`, log `evolve_market8.log`, gen ~35). Its elite did NOT beat gen-53 on the full pools.
-- Genomes: `experiments/v21_genome.json`, `v22_genome.json`, `v23_genome.json` (= gen-53), candidates `cand_*.json`.
-- `experiments/evolve_grove.py` / `evolve_ranch.py` — older lines.
+- Never `kill $(ps | grep pattern)` where the pattern can match your own shell (it killed the session twice); filter with
+  `awk '$2=="bash" && $3 ~ /script/'` or `grep "[p]ython …"`.
+- Never write HANDOFF via an unquoted heredoc (backticks execute; it mangled two entries).
+- Every ProcessPool that mixes fair-env and trace games must `fair_env.restore()` in the trace branch.
+- Chrome with DevTools is available (`--remote-debugging-port=9222`) for the Kaggle UI (discussion/code tabs render only in JS).
+- Background gates/waiters from the previous session do not survive a new session: after restarting, check the tuner logs for
+  `FULL-CHECK` lines and run the 64-seed gate by hand.
 
-## Findings that matter (all measured)
+## 8. Next steps, in order
 
-1. Objective mismatch was the core error: coins vs pass ≠ ladder rating. Optimizing vs replayed real opponents lifted the
-   pool win-rate 38% → 85% (v22 → gen-53) with no change in code.
-2. Executor bugs found and fixed on the way: market cap of 10 orders/turn silently limited hires to 10 (hires now spill to
-   hours 1–2); FEED/CARE underpriced (unfed animals → no milk); one animal's feed/care/collect split across units (stay-and-
-   finish); produce sold only from the shed → deliver job; feed re-bought while carried.
-3. Mechanics from the engine: plant dies after 2 unwatered days; strawberry +1 unit per 2 days from age 10 (×2 if fertilized
-   AND watered that night), 4 productions then dies; melon yield accrues per watered day at ages 6–12 (+2 fertilized);
-   animals: base 1 per interval, +1 per fed&cared day, unfed production day forfeits the bonus, 2 unfed days = escape;
-   hires cost Fibonacci per hand per day; shops unlock days 4,6,10,12,16,20,24 from 8 types.
-4. Top tier vs v23 (25 games): we already match them in output (94k vs 98k); they win by consistency. Our wins have 12–13 cows
-   by day 12, our losses 4–6; they wind strawberries down from day 18 into wheat/carrot/tomato, keep 2–3 geese, sell
-   476 wheat / 122 eggs / 113 carrots / 89 tomatoes to our 102/0/18/0.
-5. Rejected (worse on the pools): copying the top structure by hand, hardcoded herd floors, NPV herd rule (both variants),
-   Cournot withdrawal (helps opponents), k-means territories, job-centric/Hungarian matching, commitment, more hands, 4th quadrant.
-   Everything hand-set lost to search-tuned targets; the search is the only thing that has produced steps.
-
-## Operational gotchas
-
-- Machine rebooted once (kills all nohup jobs: search, rating watch, schedulers). Check `ps` after any gap.
-- Never `pkill -f <pattern>` / `pgrep -f` loops that can match your own shell (killed the session twice); use
-  `ps -eo pid,args | grep "[p]attern"` and skip `$$`.
-- Rating watch: `tools/watch_rating.sh <ids…>` (hangs occasionally on the API; restart if the log stops).
-- Chrome with DevTools: `google-chrome --remote-debugging-port=9222 --user-data-dir=~/.local/share/kaggriculture-chrome`.
-- typesafe.ai "Jev" key at `~/.config/typesafe/apikey` (never commit); SDK venv `~/.venvs/ts`; not usable in-game, weak offline.
-
-## v23 first read (14:05 local, 27 games): rating 805, 16–11
-
-Wins vs 614–806; losses vs 723–892. Six of the eleven losses are within 4k (coin-flips). Our average score in real games is
-~78k, well below the 94k of the pool tests: live opponents crash the shared markets harder than replays. In the five
-lowest games our day-6 farm was identical (fixed opening) and the divergence is: (a) opponent floods milk/strawberry →
-prices 1–13 by day 20 (both sides ~40–50k); (b) in the two clear losses our herd stayed at 3–4 cows (milk demand 1–2
-shops, correctly not built) while **strawberry cells crowded out wheat although 5–6 wheat buyers were open** (we had 8–13
-wheat tiles vs their 26–27) and the opponent ran 9 sheep into 3 yarn stores. The plan's crop order is fixed
-(MELON, STRAWBERRY, WHEAT, …) regardless of relative value. A value-ordered allocation (yield/day × price, haircut by total
-supply incl. the opponent's vs the town drain) was added as knob `crop_value=1`; its pool test was launched at handoff
-(result in `scratchpad/crop_value_test.log`). If it beats gen-53 on both pools, build it as v24 (4 slots left today).
-
-**Result:** `crop_value=1` LOST on both pools (ladder 19/34 +5.8k, top 7/25 −11.4k vs gen-53's 29/34 / 9/25). Same lesson as
-every other hand rule: value ordering with quoted prices over-reacts (prices already reflect gluts; the fixed order's
-strawberry bias is what the search tuned around). Leave it as a search knob only.
-
-## Method correction (14:30 local) — do not undo
-
-The repeated error was evaluating structural ideas as one-off swaps on a genome tuned for the old structure (they all
-lose that way) and then hand-testing more of them while competing with the search for CPU. Rule from here: **every idea
-goes in as a knob/switch and is judged only by the search with the other knobs re-tuned around it; promotion decisions use
-the full pools, never a sample.** `evolve_market.py` now: 12 opponents/generation, structural switches (`herd_npv`,
-`crop_value`, `geese_min`) flipped in a third of children, and the elite re-validated on the FULL pools every 8 generations
-(`experiments/evolve_market_fullpool_<gen>.json`). Search restarted as `evolve_market.py 9` (log `evolve_market9.log`).
-Use my time for things the search cannot do: new capabilities/knobs, opponent pools, bug-finding in the executor.
-
-## Next steps (in order)
-
-1. Read v23's next games (ListEpisodes) — where it loses, to whom, our score in losses.
-2. Keep the mixed-pool search running; verify any elite with the standard recipe before spending a slot.
-3. The remaining known gap is consistency vs the 3000-tier: herd-size variance and unused wheat/carrot/tomato demand.
-   Try making those *search-tunable behaviours* rather than hand rules (e.g. knobs for late-herd growth conditional on milk
-   shops, strawberry wind-down day, tomato/carrot activation thresholds) and let the mixed-pool fitness decide.
-4. Add 1500–2500-rated opponents to the pool (need their submission ids from the leaderboard UI) so the fitness covers the
-   tier between the ladder pool and the top pool.
-
-## Session 2026-09-22 14:15–15:15 local (this section supersedes "Next steps" above)
-
-**Ladder:** v23 (56446174) 18-13, rating ~794 after 31 games (losses to 720–890-rated opponents scoring 75–100k; our live
-mean 78k). v22 705. 4 submissions left in the UTC day; none spent.
-
-**Executor bugs found in the engine source** (`.venv/lib/python3.12/site-packages/kaggle_environments/envs/kaggriculture/kaggriculture.py`,
-engine 1.32.7 = current): one-shot crops decay 1 unit / 2 hours from hour 0 of the day after their max-yield day (carrot age 4,
-wheat 5, melon 13) and grow only on watered days inside a window (carrot ages 2–3 → max 3 units unfertilized, wheat 2–4 → 4);
-our carrot rule waited for 4 units / age 4, so in the two v23 losses analysed 22 of 35 sprint carrots rotted and the rest sold at
-2 units, and wheat came off at 3 not 4 (harvested before its last watering). Shed holds 100 units; the night drop discards the
-overflow (43–61 units/game). Fixed as default-on knobs in market.py: `harvest_decay`, `harvest_late_hour`, `shed_guard`,
-`water_growth_mult` (the engine refuses HARVEST before first_yield_day — the rule checks RIPE). Verified: no failed harvests,
-glut seed 104k→113k, seed 101 139k→143k vs pass. **Pools (eval/pool_eval.py):** fix 27/36 +8.6k | mid 1/30 −34.8k | top 10/25
-−6.8k vs old executor 29/36 +9.7k | 1/30 −34.2k | 9/25 −3.8k; fair 5/8 +1.6k. Not a promotion by itself → left to the search.
-
-**Search:** `evolve_market.py` fixed (5-char labels collided, every trace bucketed as ladder, empty top bucket would crash gen 7);
-full-pool validation now buckets ladder/mid/top/pub and writes `evolve_market_fullpool_<run>_<gen>.json`; elites seeded from
-v23/v22/best.json. New knobs: herd_until2/herd_rich_drain, tomato_until, carrot_mult, tomato_mult, egg_drain_min,
-land_day1/2/3, land_n, liquidate_from + the fixes above (74 knobs). Pool: + `replays/mid/` (32 opponents 1500–2500, built by
-`tools/build_pool.py mid <candidates.json>` from the leaderboard API capture with teamId+submissionId for all teams,
-`scratchpad/leaderboard_resp.network-response` of session aec4845d; ListEpisodes rate-limits → 8 s spacing). Running:
-`evolve_market.py 11` (log scratchpad `evolve_market11.log`, session 6bd47f41). Fitness = pass + 12 traces + 2 public bots.
-
-**Discussion/Code tab (first look):** public Apache-2.0 agent `thomastschinkel/the-2945-farm-96-vs-the-top-10-public-bots`
-= the byte-exact main.py that scored **2944.7 live** (sub 56269928): route-tape replayer + reflex layers (sale racing on the
-public rival-sales signal, 451k-event sale library, shed guards, per-tile carrot-vs-wheat simulation, herd model). Other public
-notebooks score 2200–2750. Its author's from-scratch demand-driven planner reached 990–1578 live (like ours); the open problem vs
-the top 10 is the second half (≈10 tomato tiles from day 12, labour plan). Copies + README in `refagents/public/`; both are
-reactive opponents in the search (`pub:farm2945`, `pub:shopwork`). Bench: v23 0-8 vs farm2945 (−40k/game), 0-8 vs shopwork.
-Kaggle daily top-episodes datasets: `kaggle/kaggriculture-episodes-index` (manifest.csv → ~640 replays/day, median rating
-~3040). Final ranking = single Bradley-Terry tournament after two post-deadline weeks. Mechanics confirmed from source: price =
-f(market inventory) only, shops drain 1 unit/product every 4 steps, lockstep quotes (sell order position matters, timing vs the
-opponent does not).
-
-**Decision needed from the user:** 2800+ by 09-30 from the 794 line is not plausible (public author's identical attempt: ~1.5k).
-Options: (a) build on the Apache-2.0 2945 chassis with attribution and add an edge (search-tune its reflex thresholds; its
-unsolved second-half/tomato labour problem is where our auction executor could contribute); (b) keep the own line and use the
-public bots only as sparring. Nothing committed; no submission spent today.
-Public farm2945 vs our trace pools (native seeds, real env): mid 20/30 (+4.2k, ours 92k) | top 15/25 (+20.4k, ours 112k);
-v23 old executor on the same pools: mid 1/30 (−34.2k) | top 9/25 (−3.8k). (Frozen traces flatter the racer: it sells before
-recorded sales that cannot react.)
-
-## 15:30 local — direction set: build on the public chassis
-
-- **v24 = `submissions/v24_farm2945_base.py`** (byte-exact public farm2945 v9/4, Apache-2.0, attribution in file) submitted
-  03:11 UTC as **sub 56451295** as the rating anchor / control; 3 slots left today. Rating watch: scratchpad `watch_v24.log`.
-- **Reactive opponent pool** `refagents/public/` (README lists sources): farm2945 (2945), tetsutani demand-preserving (2750),
-  alperen first-in-line (= V48 byte-identical, 2746), alperen market-rhythm, Ahmed V47 (2686) / V48 (2670) / V56 (newest),
-  tetsutani shopwork (2248). Load with Kaggle's last-callable rule (V47 = `_y_agent_shopherd`, V48 = `_e335_agent`). Each
-  game ~3–4 s.
-- **Chassis tuner `experiments/evolve_chassis.py <seed>`**: 49 knobs = the chassis's module constants (V9_RACE_*, V9_CARROT_*,
-  V9_HERD_*, _CA_*, _OR2_*, _HD2_*, _CS_*, _CH_*, _SR_*, opening BUY/SELL), applied by setattr on a fresh import (verified: the
-  base genome ties the mirror exactly; RACE/CARROT overrides change play). Fitness = fair-env margin vs mirror (3 seeds) + 4 other
-  public bots; FULL-CHECK every 6 gens = all 8 opponents × 8 seeds → `evolve_chassis_full_<run>_<gen>.json`. Running as run 1
-  (log scratchpad `evolve_chassis1.log`). Log `experiments/evolve_chassis_log.jsonl`, best `evolve_chassis_best.json`.
-- Promotion rule for v25+: candidate must beat the unmodified chassis head-to-head on the FULL-CHECK (mirror margin > 0 on ≥ 6/8
-  seeds and no other opponent worse than base) — then build `submissions/v25_*.py` = chassis file + a short appended block that
-  sets the tuned constants (keeps the file byte-exact above the block, attribution intact).
-- Own-line search (`evolve_market.py 11`) stopped at gen 0 to free CPU; its state is in evolve_market_best.json / log.
-- Next after tuning: the chassis author's unsolved second half (≈10 tomato tiles from day 12, labour plan) — try as an
-  appended layer with our labour auction filling idle worker-hours; judge on the same FULL-CHECK plus the top/mid trace pools.
-
-## 16:10 local — frontier moved; v25 submitted
-- **v25 = `submissions/v25_chassis_g5.py`** (farm2945 + tuned constants block; gen-5 elite 46-18 vs public pool, base 36-21;
-  block verified identical to make_agent on 2 seeds) submitted 03:58 UTC as **sub 56452284**. 2 slots left today. Active: v24+v25.
-  v24 rating 1321 after 10 games (15:52).
-- **The public frontier has moved past farm2945**: tetsutani demand-preserving (2750 public score) and Ahmed V56 both beat the
-  unmodified chassis **8-0** (they carry the same v9/4 stack plus anti-clone layers: EXP283 clone-gated sale pre-emption, v44y
-  clone-mode race horizon + lockstep best-response ordering, V219SKIP). v56 vs demand 6-2 (−168 mean: equal). Vs the 25 top
-  traces: demand 24/25 +36.7k, v56 24/25 +36.7k, farm2945 15/25 +20.4k. → base for v26+ = v56 or demand (whichever is
-  deterministic in mirror play; test in progress). `evolve_chassis.py` now takes `CHASSIS=farm2945|demand|v56` (auto-derived
-  65 knobs from top-level constants for the latter two; files/logs tagged `_v56` / `_demand`). `tools/build_chassis_sub.py`
-  builds the submission for any chassis. `eval/chassis_check.py base <genome.json>` = the promotion check.
-
-## 17:00 local — measured negatives on the frontier chassis, v26 submitted
-- Constants tuner on demand-preserving (65 auto knobs, 11 gens): gen-11 elite vs base within noise on every opponent
-  (mirror +213, v56 +45 vs −168, others ±100). The file is at its optimum for its constants → tuner stopped.
-- Clone-detection hypothesis: a rival with its 3 clone gates disabled ties 7/8 mirror games (+16). The clone layers do not
-  decide mirror games. The hand-permutation layer (`layers/depermute_block.py`) collapses the tape (9.6k) — negative, kept for record.
-- **v26 = `submissions/v26_demand_base.py`** (byte-exact tetsutani demand-preserving) submitted ~04:55 UTC; active = v25 + v26
-  (v24 retired from play at 1761 after 24 games, 23-1). 1 slot left today. Pending tests: opening quantities sweep
-  (`scratchpad/opening_sweep.log`), `_ALT_MODE` EarlyCycle vs HybridOpening (`altmode_test.log`); modes available:
-  Original / EarlyCycle / HybridOpening / Mixed (Dmitrii Gluzdov block at the end of the demand file).
-- Opening-quantity sweep on demand-preserving (8 seeds vs mirror/v56/farm2945): 20/15 is optimal; 20/14 and 21/15 lose −250 to
-  the mirror, 19/15 −7k, 16/12 −7.4k, 25/15 −1.8k, no opening −108k. `_ALT_MODE` EarlyCycle = identical results to HybridOpening.
-  Conclusion: the frontier files are at a symmetric optimum vs relatives; constants, openings and clone gates are exhausted.
-  Remaining lever = how the live top-10 beat this lineage (study running: `scratchpad/top_vs_lineage.log`).
-
-## 17:20 local — what the 2800–2960 band actually is
-Sampled 24 recent top-10 games vs 2780–2960 opponents (`scratchpad/top_vs_lineage/summary.json`, `top10_episodes.json`):
-**none of the 24 opponents runs the public route-tape opening** (they open BUY WHEAT 13 / BUY 5 + COW 1 / HIRE×4 + 2 cows 3 sheep…).
-The band's farms mirror the top-10 structure: 3 quadrants by day 10, 7–8 cows + 6–7 sheep + 3 geese, strawberries 23→29
-tiles by day 14 then wound down from day 20, **tomatoes ~10 tiles days 14–20**, wheat 23–31 late, carrots late. Top-10 beat the
-band 17-7 by +5k mean (105k vs 100k). The public chassis line (33 strawberries to day 24, 1 tomato, 16 wheat) is a different
-species. New trace pool `replays/band2900/` (up to 40 distinct band opponents from those games, built by `scratchpad/build_band.py`);
-`scratchpad/band_eval.py <who…>` scores demand/v56/farm2945 against it (`band_eval.log`).
-- Public chassis vs the band2900 pool (40 frozen traces of 2780–2960 opponents, native seeds): demand 33-7 +18.8k, v56 33-7
-  +18.6k, farm2945 31-9 +17.8k (ours ~107k vs 88k). Frozen traces flatter a sale-racer, but the lineage sits comfortably above
-  the band → the 2800+ target rests on this base; live confirmation from v25/v26 over the next day. v25 1850 after 15 games.
-
-## 2026-09-23 14:00 local — overnight ladder
-| sub | agent | games | record | rating path → now |
-|---|---|---|---|---|
-| v26 56453495 | demand-preserving byte-exact | 153 | 82-71 | 681→1927→2318→2442→2457 peak→**~2400–2445** (bronze line ≈ 2450) |
-| v25 56452284 | farm2945 + tuned constants | 156 | 87-69 | →2186 peak→**~2110–2160** |
-| v24 56451295 | farm2945 byte-exact (retired) | 24 | 23-1 | 1767 |
-Losses are coin-flips vs peers: v26 scores 97.6k vs 99.0k in its 66 losses (opponents rated 2222–2576). The demand lineage rates
-~280 above farm2945+tuned in the same field. Public scores quoted in the notebooks (2750/2945) were earned in an older field.
-Next: profile v26's live losses (`scratchpad/live26_profile.py` → `live26_profile.log`, pool `replays/live26/`), v27 = V56
-byte-exact submitted 14:05 local for the lineage comparison (retires v25). 4 slots left today.
-- **Live classification of v26's 134 games vs ≥2200 opponents** (`scratchpad/live26_classify.py`, `live26_classified.json`,
-  replays in `replays/live26/`): 127 are clones of this chassis (82 with exactly our step-0 signature BUY 20 / SELL 15 / BUY_SEED
-  WHEAT 1 = demand/v56 lineage; 18 farm2945's BUY 20 / SELL 15; 10 V47/V48's BUY 7 / SELL 2). Record vs clones: <2400 31-18 (63%),
-  2400–2500 27-41 (40%), 2500+ 2-8. Vs the 7 non-clone adaptive farms 3-4. The 2400 band is a swamp of the same public files;
-  copies rated 2500+ beat us, so stronger variants (v56? private tweaks) exist above. In losses the rival sells more milk/strawberry/
-  wool/wheat and we dump more fertilizer → lost sale races. v27 = v56 byte-exact live since 14:05 (sub 56479438).
-- **64-seed head-to-head on the demand chassis** (`eval/chassis_check.py`, seeds 601–664, `scratchpad/chassis_check_demand_64.log`):
-  base vs itself 4-2 (58 ties), vs v56 8-56 (+14); **gen-11 elite** (`experiments/v28_demand_genome.json`) vs unmodified file
-  45-19 +500, vs v56 26-38 +271, all other relatives ≥ base (ALL 450-62 vs 387-67). Promoted as **v28 = sub 56481283** (15:35 local; `submissions/v28_demand_g11.py`
-  = demand file + constants block via `tools/build_chassis_sub.py`). Tuner run 2 (CHASSIS=demand FRONT_SEEDS=4, log
-  `evolve_chassis_demand2.log`) continues; any later elite must pass the same 64-seed check before it replaces v28.
-
-## 2026-09-23 16:30 — two corrections and a negative
-- **BUG (evaluation): `fair_env.apply()` was process-wide with no restore.** In every ProcessPoolExecutor that mixed fair-env
-  games (pass / agent-vs-agent) with replayed traces, workers kept the patched weed pass for later trace games → shop draws
-  differed from the recorded game → the trace opponent was unfaithful. Contaminated: `evolve_market.py` fitness and
-  `eval/pool_eval.py` trace buckets (pass job runs first in each worker), `frontier_cmp` ("demand 24/25 vs top" is WRONG),
-  the own-line pool numbers in general. Clean: `band_eval`, `pub_vs_pools`, `chassis_vs_top`, `hybrid_eval` traces (fair jobs
-  last), all `evolve_chassis` / `chassis_check` numbers (fair only). Fixed: `fair_env.restore()` + `is_applied()`; trace
-  branches now call restore(). Clean re-measurement vs the 25 top traces is in this section below.
-- **Hybrid (tape days 0–11, our market planner from day 12 or 16) = NEGATIVE**: band2900 9-31 (−15.8k), top 8-17, live clones
-  0-20 (−37k), vs demand/v56 0-8 (−39k); the pure chassis on the same games: 33-7 / 15-10 / 3-15 / 1-0 / 2-6. Our planner loses
-  ~30k over the second half relative to the tape. `kaggriculture/agents/hybrid.py` kept; do not resubmit this idea without a
-  much stronger second-half executor.
-- Clean re-measurement vs the 25 top traces (shipped env, `scratchpad/top_clean.py`): demand 15-10 +20.1k, v56 15-10 +20.5k,
-  farm2945 15-10 +20.4k. The three public files are equal against the top tier; the "24/25" earlier in this file is void.
-
-## 2026-09-23 20:15 — executor rebuild, live picture, hybrid search
-- **Live**: v28 (demand + tuned) 2245 after 81 games, v27 (V56) 2011 after 80, v26 (retired) 2378. All sub-2200 losses of v27/v28
-  are coin flips (−16…−2,000) vs COPIES of the same file (identical day-12 farms) → the copy swamp now spans 1800–2550.
-  Trace gate (`scratchpad/trace_gate.log`, 122 diverse traces): v28 genome 93-29 vs base 81-39 (live26 clones 32-18 vs 20-28).
-- **Tour executor** (`kaggriculture/agents/tour.py`, `executor="tour"` knob): fixed daily zone tours + need-based supplies. From
-  the tape's day-11 farm vs pass: tape 137k, auction hybrid 103k→106–113k after the wheat-carrier fixes (`feed_per_carrier`,
-  `pickup_value`: one carrier used to take the whole shed's wheat), tour hybrid 99k. Neither executor is the bottleneck; the
-  second-half deficit (~25k) is planner/market rules: animals unfed on some days → escapes (26→20), strawberries under-fertilized
-  (2–5 applications/day vs ~16 windows; `fert_reserve_mult` did not help), wheat tiles lapse, smaller carrot sprint.
-- **`experiments/evolve_hybrid.py`** (running, run 1, log `evolve_hybrid1.log`): search over the ~50 second-half knobs of the
-  hybrid (tape days 0–11 → our planner/executor), fitness = coins vs pass from the tape's day-11 farm on 3 seeds + margin vs the
-  tape (fair env). Target: ≥137k vs pass (the tape's own number). Tuner run 4 (`evolve_chassis_demand4.log`, trace-augmented
-  fitness) continues at 8 procs.
-- fair_env leak fixed (`restore()`); all trace evaluations since 16:30 are clean.
-- 21:50 hybrid search gen 53: vs pass 141k (tape 161k) on the 3 seeds, margin vs tape −14.7k (from −47k at gen 0). Full pools for
-  the gen-49 elite (`scratchpad/hybrid_eval_best.log`): band 9-31 −12k, top 8-17 −5k, live26 0-20 −31k, demand/v56 0-8 −27k (tape
-  on the same games: 33-7 / 15-10 / 3-15 / 1-0 / 2-6). Improving but far from parity; left running overnight (run 1, JOBS=12),
-  auto full-eval when tape-margin > 0 or gen 150. Tuner run 4 continues. v28 2238 @89, v27 2022 @84. 3 slots left today unused.
-
-## 2026-09-24 01:00 — hybrid search: dead end; tuner run 4 elite under the gate
-- Hybrid search plateaued: gen 53 → gen 152 moved the tape margin only −14.7k → −13.1k; full pools unchanged (band 9-31 −12.7k,
-  live26 0-20 −33k, demand/v56 0-8 −28.6k vs the tape's 33-7 / 3-15 / 1-0 / 2-6). Our planner's second half caps ~25–30k below the
-  tape against relatives whatever the executor. **Stopped.** The takeover idea needs the winners' second-half targets
-  (shop-conditioned table from the daily top-episodes dataset), not more knob search.
-- Tuner run 4 (trace-augmented fitness) gen-17 elite full check: mirror +768, v56 +611, all relatives ≥ base, traces 104/122
-  +8.5k. 64-seed gate vs base and vs the v28 genome running (`scratchpad/chassis_check_run4.log`).
-- v28 2227 @96 games (24-28 vs 2200–2400; v26 was 34-22 there two days ago), v27 2004 @97 (V56 lineage weaker live; dropped).
-  **v29 = sub 56493719** = byte-exact demand file again (identical to v26), submitted 01:05 local as a same-field control: over the next
-  hours v28 (tuned) vs v29 (base) climb through the same population → decides whether the tuned constants help live. 2 slots left today.
-- **64-seed gate** (`scratchpad/chassis_check_run4.log`): run-4 gen-17 elite ALL 498-14 +5.2k: mirror 59-5 +1,334, v56 57-7
-  +1,161, every other relative >= base; traces 104/122 +8.5k (base 81/122). v28 genome for comparison: mirror 45-19, v56 26-38.
-  -> **v30 = sub 56495224** (`submissions/v30_demand_g4_17.py`, genome `experiments/v30_demand_genome.json`, 52 constants) submitted
-  01:25 local. Active: v29 (base, sub 56493719) + v30 (tuned) in the same field -> the live A/B. 1 slot left today. Tuner run 4 continues.
-
-## 2026-09-24 07:00 — same-field A/B decided: tuned constants help live
-| | games | rating | vs <2200 | vs 2200-2400 |
-|---|---|---|---|---|
-| v30 tuned (sub 56495224) | 81 | **2244** (2194@60, 2249@80, climbing) | 54-11 | 10-6 |
-| v29 unmodified file (sub 56493719, = v26) | 79 | 2113 | 42-25 | 2-9 |
-The base file that reached 2378 two days ago plateaus ~2110 today: the copy swamp now reaches 1800, so ratings are only comparable
-within the same field/time. The offline 64-seed gate predicted v30 > base (59-5) and the ladder confirms it (+130 in the same field).
-**Direction:** the constants search is the only lever that has moved the ladder; it gets the CPU. Next: tuner with v30's constants as an
-extra reactive opponent (arms race vs our own best), same 64-seed gate (+ trace term) before any slot. Final picks by 09-30: the two
-strongest by gate + live plateau (currently v30, then v28/v26). Hybrid/tour/second-half work parked (see 01:00 entry).
-
-## 2026-09-24 09:15 — two more measured negatives on the 3000 question
-- **Rank-1 farms as tapes**: DSM's 28 recorded games replayed open-loop vs the reactive chassis on native seeds: 1-27; replayed
-  value 59k vs 116k recorded (`scratchpad/dsm_tape_test.py`). Adaptive farms cannot be taped; the route-library path is closed.
-- **Tomato swap of the tape's day-11 strawberry batch** (`layers/tomato_swap_block.py`, K=13): vs mirror 1-7 −7.9k, v56 1-7 −8.1k,
-  self(v30) 1-7 −8.6k, pass −17k mean (seed 601: −2.6k). Tomatoes worked (4 units/tile, 50 sold at $50–63) but the tape digs the
-  finished tiles on day 23 and never replants (13 idle tiles for 6 days) and its strawberry sale plan loses its lots. Negative.
-- Conclusion stands: no measured path to 3000 within the deadline; the tuned-chassis line (v30 lineage) is the final vehicle.
-
-## 2026-09-24 09:40 — v31 (run-5 elite) submitted; arms race continues
-- Gate (`scratchpad/chassis_check_run5.log`, 64 seeds): run-5 gen-11 elite vs v30's constants **57-6 +629**, mirror 61-3 +1,510
-  (v30: 59-5 +1,334), v56 57-7 +1,314 (v30: +1,161), other relatives equal, traces 105/122. -> **v31 = sub 56508691**
-  (`submissions/v31_demand_g5_11.py`, genome `experiments/v31_demand_genome.json`, 54 constants). Active: v30 + v31 (same-field
-  A/B of two tuned generations); v29 base control retired at ~2100. Live at submit: v30 2256 @90. No slots left in this UTC day.
-- Tuner run 6 started with SELF_GENOME = v31 (log `evolve_chassis_demand6.log`); gate for its elites = chassis_check vs v31 on 64 seeds
-  (auto-armed). Lesson for this file: never write HANDOFF via an unquoted heredoc (backticks execute).
-- 16:40: run-6 gen-11 elite vs v31: 30-34 +318 (mirror 60-4, v56 58-6) → does NOT clear the gate; constants line converging around
-  v31. Live: v31 2408 @45 (v30 was 2145 @40), v30 2328 @127. 5 slots available (new UTC day since 12:00 local); none spent.
-
-## 2026-09-24 17:35 — same-field A/B across three generations (rating at game 60)
-| | @20 | @40 | @60 | now | vs <2200 | vs 2200-2400 | vs 2400-2500 | vs 2500+ |
-|---|---|---|---|---|---|---|---|---|
-| v31 run-5 constants (sub 56508691) | 2290 | 2402 | **2498** | 2495 @63 | 19-0 | 9-5 | 16-9 | 3-2 |
-| v30 run-4 constants (sub 56495224) | 1868 | 2145 | 2194 | 2322 @131 | 57-12 | 41-21 | | |
-| v29 unmodified file (sub 56493719) | 2303 | 2105 | 2088 | 2109 @116 | 56-42 | 4-11 | 0-1 | |
-The offline 64-seed gate has predicted the live order every time (base < v30 < v31). v31 is above the bronze line (~2450) and
-still climbing. Final-pick order today: v31, v30. Tuner run 6 (target v31) continues; its gen-11 elite failed the gate (30-34).
-
-## 2026-09-24 18:10 — v32 (run-6 gen-29 elite) submitted
-- Gate (`scratchpad/chassis_check_run6b.log`, 64 seeds): vs v31's constants **39-25 +440**, mirror 64-0 +1,687 (v31: 61-3 +1,510),
-  v56 59-5 +1,385 (v31: 57-7 +1,314), all other relatives >= v31, traces 106/122. -> **v32 = sub 56515072**
-  (`submissions/v32_demand_g6_29.py`, genome `experiments/v32_demand_genome.json`). Active: v31 + v32 (same-field A/B); v30 retired
-  at 2329 @134. v31 at submit: 2507 @71. 4 slots left in this UTC day. Tuner run 7 started with SELF_GENOME = v32
-  (`evolve_chassis_demand7.log`); gates auto-armed vs v32.
-- 22:30: run-7 gen-17 elite vs v32: self 60-4 +574, but mirror 61-3 +1,536 (v32: 64-0 +1,687) and v56 61-3 +1,301 (v32: 59-5
-  +1,385), traces 105/122 (v32: 106). Beats our own elite while slipping vs the base file → arms-race overfitting risk. Promotion rule
-  tightened: candidate must beat the current best head-to-head AND be ≥ it (within noise, −100) vs mirror AND v56 — this one fails.
-  Live: v31 2526 @91 (plateau ~2500–2530), v32 2381 @48 (v31 was 2402 @40). Run 7 continues; gen-29 gate armed.
-- 23:40 **Unreadability layer** (`layers/unreadable_block.py`: per-item jittered race horizon from a private RNG; optional SELL
-  slot shuffle) vs mirror/v56/v32 on 8 seeds: jitter 8–16 → mirror +68/+71, v56 −118/−54 (base −168), v32 −1.6k (unchanged):
-  negligible. Slot shuffle → −1.8k to −3.4k everywhere: **SELL slot order is worth ~2k/game** (ORDERPRI2/v44y already optimise it).
-  Readability is not the copies' edge; timing jitter is not a lever. Negative, recorded.
-- 23:20 **v32 same-field A/B**: at game 60 v32 2383 vs v31 2498 (v30 2194); now v32 2406 @64, v31 **2525 @96** (plateau), v30 2337.
-  v32's offline 39-25 over v31 did not show live → the arms race has hit the noise floor of the copy swamp. Promotion bar raised:
-  ≥ 42-22 vs **v31's** constants over 64 seeds AND mirror/v56 margins held. Final picks now: **v31**, then v32/v30.
-  Run 8 (SPAN_MULT=2, wider auto ranges; 10 of v32's constants were pinned at bounds) and run 7 continue; gates armed.
-
-## 2026-09-25 01:00
-- Run 7 gen-29 elite collapsed (mirror 19-45, self 3-61): its fitness was captured by one frozen trace beaten by +132k. Run 7 killed.
-  Fitness margins now clipped to ±10k per game (`MARGIN_CLIP`). Run 8 (wider ranges, JOBS=8) continues; run 9 started (same
-  config, rng 9, JOBS=8, clipped). Live: v31 2519 @101, v32 2433 @79. Final picks unchanged: v31 first.
-- 04:20 run-8 gen-11 elite (wider ranges, from v32+base): self 12-52, mirror 58-6 → not promoted; early generations of the wider space
-  are below v32, gate re-armed at gen 29. Live: v31 2526 @103, v32 2437 @82. Rating watch restarted.
-- 05:40 run-9 gen-11 elite: self 7-57 vs v31, mirror 52-12 → not promoted (wider-space runs still below the optimum). Live v31 2514 @116, v32 2447 @96.
-- 09:50 run-8 gen-29 elite (wider ranges): mirror 34-30, self 28-36, traces 87/122 → worse than v31; run 8 killed (the doubled
-  ranges let the search drift on a noisy sample). Run 9 continues (gate at gen 29). Live: v31 2501 @131, v32 2464 @110 (still
-  rising). The constants line is at its optimum ≈ v31/v32; final picks v31 + v32.
-- 10:45 run-9 gen-29 elite: self 6-58 vs v31 → both wider-range runs (8, 9) failed; killed. **Constants search converged at v31.**
-  Run 10 = narrow space (SPAN_MULT=1), rng 10, SELF=v31, clipped fitness, JOBS=16 — a cheap background try only.
-  Live: v31 2496 @135, v32 2453 @116. Final picks: v31 + v32. Next: confirm Kaggle's final-submission selection mechanism.
-
-## FINAL-SELECTION RULE (from the Overview → Evaluation page, read 2026-09-25 11:00)
-"Only the latest 2 submissions are tracked. The latest 2 submissions are also used for final leaderboard evaluation." At the
-deadline (2026-09-30 23:59 UTC) submissions lock; games continue ~2 weeks; a Bradley-Terry tournament on those episodes decides.
-→ There is NO manual pick. **The last two files submitted are the finals.** Currently v31 (sub 56508691, ~2500) + v32
-(sub 56515072, ~2455). Any new submission retires v31. Rule from here: submit ONLY a candidate that beats v31's constants ≥ 42-22
-over 64 seeds with mirror/v56 margins held; otherwise submit nothing more. If a strong one appears, submit it and, if v32 is then
-the weaker of the pair, consider re-submitting v31's file afterwards so the finals are {new, v31}.
-
-## 2026-09-25 12:00 — forum findings that change the plan
-- Thread "What actually predicted the ladder" (Avineesh, 09-24): final = Bradley-Terry on WIN/LOSS; at 2250+ the median gap is $177 and
-  78% of games are decided by < $1,000 → optimise paired WIN RATE, not margin (tuner fitness switched: wins first, margin tiebreak;
-  run 11, SELF=v31). A candidate must also win on the climb (<2000 band), not only in the target band. Kaggle staff (Tournament
-  Question thread): the BT fit uses **all episodes ever played between submissions still active at the end** → games v31/v32 play
-  now count; a strong agent gains from staying active; each new submission retires the older active one.
-  Their negatives: selling earlier −80k, splitting sales −60k, holding stock −2.3k. Their positive: repairing blocked actions +4.4k.
-  Timeout risk: first move of a 1 MB agent can take 300–400 ms; the 60 s overage bank forfeits the game (our v31 timing measured
-  below).
-- Thread "[Tool] byte-identical Rust simulator" (Debmalya, 09-25, Apache-2.0, github.com/debmalyaroy/kaggriculture-simulation):
-  official-engine port, 770 games/s engine-only, ~16x faster tournaments with Python agents, paired A/B (McNemar), tape tools.
-  Cloned to scratchpad `kaggsim/`; if it runs our agents, the 64-seed gate drops from ~10 min to ~1 min.
-- Code tab now (by score): V38 2625, V39 2621, V53 2597, V55 2596 (4d), Multi-Route 2584 (13h), Kaggricult-Man 2579 (1h; "sell
-  selected lots one turn earlier in likely mirrors, two if the rival pre-empts"), cha22 2568, Master Engine V3 2544. Copied the new
-  ones to `refagents/public/`; v31 vs each on 12 seeds running (`scratchpad/newpub_test.log`).
-- kaggsim (Rust simulator, binary in scratchpad `kaggsim/ds/kagg`, python pkg `kaggsim/`): fidelity confirmed on v31 vs demand
-  seed 601 (banks identical to the official engine: 108,010 / 112,752). Speed for OUR games: no gain (68 s vs 44 s under load): the
-  1 MB Python agents dominate per-turn cost, not the engine. Useful only for tape-vs-tape batches or as a paired-A/B harness. Parked.
-- v31 timing: import 0.48 s, first move 18 ms, slowest turn 0.6 s, ~4–5 s agent time per game (60 s overage budget) → no timeout risk.
-- 13:40 **New public lineage beats v31**: `cha22.py` (= multiroute = master-engine-v3 byte-identical, entry `ig_agent`, scores
-  2544–2584, published 12–16 h ago) vs v31: **7-5 −1,053** on 12 seeds. V53/V55 lose to v31 (10-2, 11-1). cha22 is now a frontier
-  opponent in the tuner (run 12: v56 + self + cha22 every generation, win-rate fitness). Its base strength vs demand/v56/farm2945
-  and the trace pools is being measured (`scratchpad/cha22_strength.log`) — if it dominates, the base question reopens.
-
-## 2026-09-25 14:20 — base switch to cha22
-- `cha22.py` strength (8 seeds, fair env): vs demand **8-0 +3,250**, vs v56 8-0 +3,116, vs farm2945 8-0 +4,046; top traces 14-11,
-  band2900 33-7 (equal to the older files on frozen farms; the gain is reactive). Same lineage (farm2945 v9/3 + EXP239–241 learned
-  two-policy route choice + later repairs), entry `ig_agent`, 7,482 lines, first move 2 ms, max turn 42 ms.
-- Tuner switched: `CHASSIS=cha22` (77 auto knobs, mirror not an exact tie — seat-asymmetric like v56), opponents demand/v56/**v31**
-  (our tuned demand file, `submissions/v31_demand_g5_11.py`) + rotating relatives + 4 traces, win-rate fitness. Run 1 log
-  `evolve_chassis_cha22_1.log`, files `experiments/evolve_chassis_cha22_*`. Gate: `CHASSIS=cha22 eval/chassis_check.py base <elite>`
-  over 64 seeds → v33 candidate. Demand tuner (run 12) killed.
-- Submission plan: v33 = tuned cha22 once gated (retires v31 → pair v32 + v33); then decide whether to re-submit v31's file as the
-  second final (pair v33 + v31-copy) — post-deadline games (~2 weeks) dominate the BT evidence, so late submission is acceptable.
-- 18:05 **BUG in the tuner's agent factory** (caught by the gate: "base" 0-64 vs the raw cha22 file): `make_agent` returned the module
-  attribute `agent`, which in cha22 is an inner layer, not the final `ig_agent` (Kaggle runs the LAST callable). Fixed to the
-  last-callable rule; verified: factory(base) == raw file on two seeds, and raw vs raw ties exactly (cha22 is seat-symmetric).
-  All cha22 tuner numbers before 18:05 are void (runs 1–2 killed, files removed); restarted as runs 3 (JOBS=16) and 4 (JOBS=6).
-  The demand-line results (v30–v32) are unaffected: that file's last callable is `agent`.
+1. When run 3/4 print `FULL-CHECK gen 11` (and every 6 gens after), run the gate (§4) on the newest
+   `experiments/evolve_chassis_cha22_full_*.json`; promote the first elite that passes as **v33**; then decide the second final.
+2. Keep reading the Code tab by score daily: if a newer public file beats cha22 8-0, it becomes the base (copies flood the swamp
+   within days). `scratchpad/cha22_strength.py` / `newpub_test.py` are the templates for measuring a new file.
+3. Re-run `live26_classify.py`-style loss profiles on v31/v32's latest games if their ratings drift.
+4. Stop searching by 09-29 12:00 local; make sure the two files you want are the two LAST submitted before 09-30 23:59 UTC.
