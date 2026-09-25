@@ -409,3 +409,8 @@ the weaker of the pair, consider re-submitting v31's file afterwards so the fina
   over 64 seeds → v33 candidate. Demand tuner (run 12) killed.
 - Submission plan: v33 = tuned cha22 once gated (retires v31 → pair v32 + v33); then decide whether to re-submit v31's file as the
   second final (pair v33 + v31-copy) — post-deadline games (~2 weeks) dominate the BT evidence, so late submission is acceptable.
+- 18:05 **BUG in the tuner's agent factory** (caught by the gate: "base" 0-64 vs the raw cha22 file): `make_agent` returned the module
+  attribute `agent`, which in cha22 is an inner layer, not the final `ig_agent` (Kaggle runs the LAST callable). Fixed to the
+  last-callable rule; verified: factory(base) == raw file on two seeds, and raw vs raw ties exactly (cha22 is seat-symmetric).
+  All cha22 tuner numbers before 18:05 are void (runs 1–2 killed, files removed); restarted as runs 3 (JOBS=16) and 4 (JOBS=6).
+  The demand-line results (v30–v32) are unaffected: that file's last callable is `agent`.

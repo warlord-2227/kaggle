@@ -96,7 +96,7 @@ def make_agent(genome, tag="cand"):
         if k == "OPEN_SELL":
             m.V9_OPENING_STEP0 = (("BUY_PRODUCT", "WHEAT", int(genome["OPEN_BUY"])), ("SELL", "WHEAT", int(v))); continue
         setattr(m, k, bool(v) if k in BOOLS else v)
-    return m.agent
+    return [v for v in vars(m).values() if callable(v)][-1]   # Kaggle's last-callable rule (cha22's entry is ig_agent, not `agent`)
 
 
 SELF_GENOME = os.environ.get("SELF_GENOME")        # e.g. experiments/v30_demand_genome.json: our own best as a reactive opponent
