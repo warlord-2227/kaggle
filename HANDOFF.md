@@ -76,6 +76,17 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
   ~10 tomato tiles, strawberries wound down after d20) — a production-plan change, not a selling rule. On this tape that means a
   replant executor (finished tiles → tomatoes/wheat) and shop-aware herd sizing; the tomato swap (−8k) and our own executor (25–30k
   behind the tape) are the measured history of that road. Not attempted with 4 days left.
+- **Wool split by town (09-27, `analysis/scripts/wool_gap.py`):** with a yarn store v33 is 17k behind the top-10 (11k wool) with the
+  same sheep count, care and harvests — it is the shared-market race (realised 112/unit vs 210). Without a yarn store v33 keeps 5.6
+  sheep all game (top-10 3.6 → 1.6 by d28) and sells wool at 2/unit. **Sheep-cut tested and REJECTED** (`experiments/sheep_cut_ab.py`:
+  from day 12 in no-yarn towns stop FEED/CARE on sheep so they escape, drop sheep buys): paired −1.4k/game vs demand/v31/v56,
+  wins 4-10; **−1.0 to −1.4k even on no-yarn seeds** (sheep also yield daily fertilizer, the tape buys the feed wheat anyway, and
+  the yarn store unlocks ~day 11–12 so an early cut kills sheep in towns that get one). Engine: an animal unfed 2 days escapes;
+  care+fed = +1 unit on the next production day. CAVEAT: that 224-game run overlapped a swap thrash (28/29 GB) and the engine has a
+  1 s act timeout; a clean re-run after the tuners were killed (day-15 cut, 8 seeds × both seats vs demand) gave paired **+97 overall,
+  +388 on the 4 no-yarn games but 2 wins flipped to losses**, yarn games identical (no cuts). Net: ≈ +200/game, win-rate neutral or
+  worse → not worth a slot. Lesson: the tape's fixed plan cannot be trimmed piecemeal; only a different plan (tomatoes where a
+  pizza shop / farmers' market exists: +6k gap in 36/39 towns; geese for egg shops) moves the needle, and that is executor work.
 
 ## 4. Current work: constants search on the cha22 base → v33
 
@@ -83,7 +94,9 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
   applied by setattr on a fresh import; `make_agent` returns the LAST callable — bug fixed 09-25 18:05, all earlier cha22 numbers
   void). Fitness = paired WIN RATE (margin tiebreak, clipped ±10k) vs mirror ×3 seeds + demand/v56/**v31** ×3 seeds + 2 rotating
   relatives + 4 diverse frozen traces (`replays/{mid,band2900,live26}`, shipped env via `fair_env.restore()`).
-- Running now (pids from 09-25 ~18:05, survive sessions): run 3 (`JOBS=16`, log
+- **Tuner runs 3 and 4 STOPPED 09-27 19:16 NZDT** (machine at 28/29 GB swap after two days; the search had been flat since
+  gen 5; last elites: run 3 gen ~205, run 4 gen ~80, all full-checks saved under `experiments/`). Do not restart them.
+- (History) Running from 09-25 ~18:05: run 3 (`JOBS=16`, log
   `/tmp/claude-1000/-home-iwa-working-kaggle/6bd47f41-8734-4dbd-ac5b-417bd3dc752e/scratchpad/evolve_chassis_cha22_3.log`, gen 26 at
   23:30, ~10–14 min/gen) and run 4 (`JOBS=6`, `evolve_chassis_cha22_4.log` same dir, gen 9, ~26 min/gen). Elites:
   `experiments/evolve_chassis_cha22_best.json`, full checks every 6 gens `experiments/evolve_chassis_cha22_full_<run>_<gen>.json`
@@ -214,3 +227,56 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
    within days). `scratchpad/cha22_strength.py` / `newpub_test.py` are the templates for measuring a new file.
 3. Re-run `live26_classify.py`-style loss profiles on v31/v32's latest games if their ratings drift.
 4. Stop searching by 09-29 12:00 local; make sure the two files you want are the two LAST submitted before 09-30 23:59 UTC.
+
+## 9. Post-mortem (written 2026-09-27 20:30 NZDT, before the 10-01 lock) — why this line stopped at ~2500 and what 2800+ needs
+
+**Outcome.** Goal was 2800–3000+. Final pair: v34 + v35 (cha22 public base + gated constants), expected to settle 2400–2600, the same
+band as the demand-lineage v31/v32 (2360–2410). Every offline gain (mirror 60-4 / 63-1 vs the raw file, 40-24 vs v31 vs base's 30-34)
+was real and reproducible, and worth 400–800 coins per game — invisible live, because the live field at 2300–2500 is thousands of
+privately tuned copies of the same public files, and games between them are ±100–700-coin sale races. v33 went 41-23 over v31
+offline and plateaued at v31's level live.
+
+**What the ladder is (measured).** 1800–2600: copies of the public route-tape files (day-12 farm census identical in 39/39 of v33's
+rated games). Public frontier notebooks: 2600–2625. Nobody's copy of a public file sits above ~2650. 2600–3200: unpublished
+adaptive agents (rank-1's games in `replays/top`, top-10 vs 2900-band in `replays/band2900`).
+
+**Where the 10–20k/game gap actually is (§3b, exact cash ledgers over live replays).** NOT execution, NOT costs, NOT gross sales:
+v33 sells 141k gross vs rank-1 143k and spends 23k vs 32k. The gap is net product income = unit PRICE and product MIX:
+- Demand is tiny and fixed (each shop instance: 1 unit of each listed product per 4 steps; single-product shops 2; town centre
+  1/product/day). Price is a pure function of market inventory (wool/melon quadratic above baseline, milk/strawberry linear, wheat/egg
+  ~flat). Whatever is sold beyond demand crashes the price for BOTH players.
+- The tape's farm is fixed regardless of the shop draw: ~7 sheep, ~7 cows, 33 strawberries, 0–2 tomatoes, 24 wheat. Realised prices at
+  pure-sell steps: wool 92 vs rank-1 136 / top-10 170; strawberry 53 vs 148 / 123; milk 58 vs 103 / 144. Tomatoes: 2.4k vs 8.4k in the
+  36/39 towns with a pizza shop or farmers' market. Wool by town: with a yarn store v33 is 17k behind (same sheep, same care: the
+  race); without one it keeps 5.6 sheep for wool sold at 2/unit (top-10: 3.6 → 1.6 by day 28).
+- The top agents hire the same ~10 hands/day and use the same tiles; they allocate them to what the town buys and drip-sell to
+  inventory (rank-1: 1.7 wool units per order, whole stock sold 16% of the time vs our 72%).
+
+**Add-ons tested on the tape, all rejected with numbers (§3b, §5).** Sale-hold gate −10k (holding gifts the opponent ~+24k in a shared
+market). Sheep cut in no-yarn towns ≈ +200/game, win-rate neutral or worse. Tomato swap of the day-11 batch −8k. Replant layer
+infeasible: the tape leaves 1–11 idle hand-steps/day (end-of-day tails 0–1 per hand), 1–5 free tiles mid-game, and extra hands cost
+fib(n) = 89/144 per day → net 0 to +500. Sale-slot shuffle −2k, horizon jitter noise, clone blinding ties, RL silver at best (others).
+Lesson: a route-tape cannot be edited piecemeal — its labour, cash flow, shed and sale plan all assume the fixed farm.
+
+**Why "our own agent" lost before (§5).** From the tape's own day-11 farm vs a passive opponent the tape makes 137k; our executor
+(`kaggriculture/agents/market.py` planner + `tour.py`/`hybrid.py`) made 106–113k — the plan side was fine, execution lost 25–30k.
+The own line rated ~800 live.
+
+**Spec for the 2800+ agent (what the measurements say it must do).**
+1. Read `town.unlocked_shops` every 3 days and set production to demand: sheep only with a yarn store (add them when it appears,
+   ~day 11 on average), tomatoes (~10 tiles from day 16, replanted) with pizza/farmers' market, geese for bakery/brunch (egg price is
+   glut-proof), strawberries wound down after day 20, 25–30 wheat late. Stop feeding animals whose product has no shop (they escape
+   after 2 unfed days).
+2. Sell to inventory, not to schedule: small lots when inventory ≤ baseline (price ≥ base), never dump; against a dumping copy this
+   only pays if your production is already sized to demand (otherwise you just hold a glut).
+3. Execution at tape quality: 10 hands/day at fib cost, no idle tails, routes that end near the shed (hands auto-drop at day end),
+   water every plant daily, harvest before max_held caps (goose 4, sheep 6, cow 6), fertiliser on watered days only.
+4. Opening: the tape's day 0–11 is not the gap (d0–9 revenue 8.8k vs top-10 9.2k); reuse it (hybrid) and take over from day 12.
+5. Evaluate against the right field: the live 2300–2500 opponents are privately tuned copies, not the raw public files; gate against
+   your own tuned variants and against live replays with `fair_env.restore()`, and expect offline edges among copies to vanish live.
+   Target a consistent +3–5k margin over copies (the top-10 beat the 2900 band 17-7 by +5k); that is what an 80–90% win rate and
+   2700+ look like.
+
+**What to reuse.** `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality,wool_gap,labour_audit,idle_structure}.py`
+(replay analytics), `eval/chassis_check.py` + `analysis/scripts/genome_h2h.py` + `verify_build.py` (gate/verify), `refagents/public/`
+(13 public agents, last-callable rule), `replays/{top,band2900,live_*}` (the field), the engine notes in §3b.
