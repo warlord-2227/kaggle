@@ -1,4 +1,4 @@
-# Kaggriculture — session handoff (2026-09-26, 08:30 local / 09-25 20:30 UTC)
+# Kaggriculture — session handoff (2026-09-27, 15:15 NZDT / 02:15 UTC)
 
 Read this first; `HANDOFF_LOG.md` is the full chronological log (2026-09-22 → 09-25) with every measurement.
 Competition: https://www.kaggle.com/competitions/kaggriculture (2-player farming sim, 720 turns, most coins wins).
@@ -21,8 +21,9 @@ PR #2 → main: https://github.com/warlord-2227/kaggle/pull/2 (last commit `4442
 
 | sub | file | what | live now | note |
 |---|---|---|---|---|
-| **v34** 56559582 | `submissions/v34_cha22_g4_17.py` | **cha22 base + run-4 gen-17 constants** (genome `experiments/v34_cha22_genome.json`) | submitted 09-26 08:22 local (09-25 20:22 UTC) | **active** |
-| **v33** 56553451 | `submissions/v33_cha22_g3_17.py` | **cha22 base + run-3 gen-17 constants** (genome `experiments/v33_cha22_genome.json`) | 2124 @ 74 (67-6 vs <2200, all chassis copies; still climbing) | **active** |
+| **v35** 56595044 | `submissions/v35_cha22_g4_59.py` | **cha22 base + run-4 gen-59 constants** (genome `experiments/v35_cha22_genome.json`) | submitted 09-27 15:11 NZDT (02:11 UTC) | **active** |
+| **v34** 56559582 | `submissions/v34_cha22_g4_17.py` | cha22 base + run-4 gen-17 constants (genome `experiments/v34_cha22_genome.json`) | 1796 @ 121 (107-14, still in low matchmaking) | **active** |
+| v33 56553451 | `submissions/v33_cha22_g3_17.py` | cha22 base + run-3 gen-17 constants | plateau 2308 @ 209 (65-41 vs 2200–2400, 3-5 vs 2400+) | retired by v35 |
 | v32 56515072 | `submissions/v32_demand_g6_29.py` | demand-preserving + run-6 constants | 2367 @ 202 | retired by v34 |
 | v31 56508691 | `submissions/v31_demand_g5_11.py` | demand-preserving + run-5 constants | 2411 @ ~200 (peak 2526; 28-40 vs 2500+) | retired by v33; re-submit it if v33 disappoints |
 | v30 56495224 | `v30_demand_g4_17.py` | run-4 constants | 2337 (retired) | |
@@ -32,7 +33,7 @@ PR #2 → main: https://github.com/warlord-2227/kaggle/pull/2 (last commit `4442
 
 Same-field A/B at game 60: v31 2498 / v30 2194 / v29 (base) 2088 → the constants search moved the ladder +300–400 over the
 unmodified file; v32 vs v31 was inside the noise (2383 vs 2498 @60). v31/v32 both settled at **~2400** (their 50% band). Bronze line
-≈ 2450; 3000+ needs a different species (see §5). 3 submission slots left in the current UTC day (resets 12:00 local 09-26). **Active pair = v33 + v34, both cha22 builds.**
+≈ 2450; 3000+ needs a different species (see §5). 4 submission slots left in the current UTC day (resets 13:00 NZDT). **Active pair = v34 + v35, both run-4 cha22 builds.**
 
 ## 3. The ladder, as measured
 
@@ -50,6 +51,31 @@ unmodified file; v32 vs v31 was inside the noise (2383 vs 2498 @60). v31/v32 bot
   +5.7k, Herd Safe v3 10-2 +2.3k, Kaggricult-Man (`marketshock_m1_leoprovorov.py`, agent from its dataset) 11-1 +3.2k via
   `module.agent` (its *last callable* is a patch factory that plays nothing → 3,000 coins). All are the same V39 lineage (89–92%
   shared lines). **cha22 stays the base.** Herd Safe v3 and marketshock are the closest relatives → extra gate opponents if wanted.
+
+## 3b. Gap analysis (09-26 19:00–21:30): where the 10–20k/game to the top comes from — SELLING, not farming
+
+Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}.py` over live replays: rank-1's games (`replays/top`,
+25 sides), top-10 vs 2900-band (`replays/band2900`, 40), v33's live games (`replays/live_56553451`, 39). Ledger balances to <200 coins.
+- Gross sales are equal (v33 140.8k, rank-1 142.6k, top-10 134k) and v33's costs are LOWER (23k vs 27–32k). Final coins: v33 93.6k,
+  top-10 104.4k, rank-1 114.2k. The gap is net product income: wool −7k, tomato −5.6k (v33 has 2 tomato tiles vs 12–14), egg −1.2k
+  vs top-10; vs rank-1 also strawberry −4.4k, milk −3.5k.
+- Engine facts (`kaggriculture.py`): demand is tiny and fixed — each unlocked shop takes 1 unit of each product it lists every 4 steps
+  (2 if single-product: YARN_STORE, PET_CAFE), town centre 1/product/day; nothing else buys. Price = f(inventory − 10,000): wool sq
+  (105 excess units → floor 1), melon sq, milk/strawberry linear (~2 coins per excess unit), wheat/egg log (flat). Seeds/animals are
+  fixed price; hires cost fib(n-th hire of the day).
+- Realised price per FILLED unit (shed deltas, pure-sell steps): wool v33 92 vs rank-1 136 / top-10 170; strawberry 53 vs 148 / 123;
+  milk 58 vs 103 / 144. v33 sells at inventory +30…+45 above baseline (quoted 50–58), rank-1 at/below baseline. Rank-1 drips 1.7
+  wool units per order and sells its whole stock 16% of the time; v33 dumps the whole stock 72% of the time. Eggs/wheat/carrots fine.
+  Yarn store absent in ~half the towns → wool demand 1/day → any wool beyond that is worth ~0 (rank-1 sells 56 wool units in those
+  towns vs 193 when present; v33 124).
+- **Sale-metering tested and REJECTED (09-26 18:50, `experiments/sell_gate_ab.py`, 16 seeds × both seats):** holding SELL of
+  wool/strawberry/milk/melon while quoted < 0.8·base (unless shed ≥ 70 or day ≥ 28) → 0-32 vs every opponent, **−10.1k own coins
+  paired**, and the opponent GAINS ~+24k (seed-601 diagnostic: demand file 82.5k → 106.4k). The market is shared: whatever we hold,
+  the opponent sells into the better price. In a copy-vs-copy game selling is a race (the handoff's 'sale races'), and the chassis
+  already races. The top agents' higher unit prices come from producing LESS of the glutted products (sheep only with a yarn store,
+  ~10 tomato tiles, strawberries wound down after d20) — a production-plan change, not a selling rule. On this tape that means a
+  replant executor (finished tiles → tomatoes/wheat) and shop-aware herd sizing; the tomato swap (−8k) and our own executor (25–30k
+  behind the tape) are the measured history of that road. Not attempted with 4 days left.
 
 ## 4. Current work: constants search on the cha22 base → v33
 
@@ -89,6 +115,25 @@ unmodified file; v32 vs v31 was inside the noise (2383 vs 2498 @60). v31/v32 bot
   - 08:10 `analysis/scripts/live_classify.py 56553451 1900` (parametrised classifier; replays → `replays/live_56553451/`): all 39
     opponents ≥1900 are chassis copies (day-12 farm identical); v33 is 14-1 vs <2000 and **21-3 vs 2000–2200, mean margin ≈ +1.0k**
     — the swamp, decided by ±1k, and v33 is winning it. 72 games, 66-6, rating 2112 at 08:00 (game rate ~6/h now).
+  - 09-27 10:00 local (NZDT now, UTC+13): **v33 plateau ~2340–2355** since game ~150 (183 games: 86-9 vs <2200, 56-28 vs 2200–2400
+    with mean margin +125, 3-1 vs 2400+). Recent games are ±50–400-coin coin flips vs 2250–2400 copies (many brand-new 5657xxxx
+    subs). Same level as v32 (2362) / v31 (2411) → the cha22 lineage is NOT a live upgrade over the demand lineage in the swamp,
+    despite 41-23 offline vs v31. v34 107 games, 96-11, rating 1758 (still in low matchmaking). Decision: keep v33+v34 (not worse
+    than v31+v32; v34 offline-strongest); nothing to resubmit unless v34 settles clearly below v33.
+  - 09-27 12:40: v33 drifting down — 196 games, rating 2310, 3-4 vs 2400+, 59-35 vs 2200–2400. v34 112 games, 100-12, 1772 (slow
+    matchmaking; needs ~1–2 more days to show its band). **Decision window: by 09-29 evening NZDT** (a re-submission needs ~1.5–2
+    days to settle before the 10-01 12:59 NZDT lock). If v34 settles ≥ v33 and v33 < 2350 by then, consider re-submitting
+    `submissions/v31_demand_g5_11.py` (retires v33 → pair v34 + v31-copy). Do NOT submit anything that retires v34 unless v34 is
+    clearly the worst.
+  - 09-27 13:05: Code tab unchanged since 09-25 (no new public base). Tuner still running (run 3 gen ~200, run 4 gen ~75).
+    h2h vs the v34 genome (64 seeds × both seats): **run-3 gen-185 103-25 but margin −343** (wins tight races, loses a few big);
+    run-4 gen-59 86-40 +107. Base gate on both started 13:05 (`gate_185_4059.log` → `experiments/chassis_check_gate_3_185_4_059.json`).
+    If gen-185 holds every opponent (mirror ≥ 60-4, v31 ≥ 39-25, no big-loss opponent) it is the v35 candidate to replace the
+    plateaued v33 (submitting retires v33, keeps v34).
+  - **Gate 15:09 (`experiments/chassis_check_gate_3_185_4_059.json`):** gen-185 mirror 59-5, **v31 47-17 +66** but demand 59-5, v56
+    58-6, v55 59-5, farm2945 60-4 (ALL 649-55) → arms-race trade, REJECTED. **run-4 gen-59: mirror 63-1 +780, v31 40-24 +770, farm2945
+    64-0, demand 62-2, v56 62-2, v55 62-2, ALL 670-34 +4,286** — ≥ v34 everywhere within noise, 86-40 over v34 h2h → **v35 =
+    `submissions/v35_cha22_g4_59.py`** (genome `experiments/v35_cha22_genome.json`), replaces the plateaued v33.
   - 12:10 local: v33 95 games, rating 2205 (80-7 vs <2200, **7-1 +430 vs 2200–2400**); v34 55 games, rating 1587, 52-3. Game rate
     2–6/h each, so v33 needs ~another day to show its 50% band. Decision pending: if both settle ≥ 2400 the pair stands; if the
     cha22 line settles < 2400, re-submit `submissions/v31_demand_g5_11.py` (order = the keeper last).
@@ -158,8 +203,8 @@ unmodified file; v32 vs v31 was inside the noise (2383 vs 2498 @60). v31/v32 bot
 
 ## 8. Next steps, in order
 
-1. **Watch v33 (56553451) and v34 (56559582) settle**: `.venv/bin/python analysis/scripts/ab_report.py` (ids updated); the collector
-   runs with v34/v33/v32/v31 (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
+1. **Watch v34 (56559582) and v35 (56595044) settle**: `.venv/bin/python analysis/scripts/ab_report.py` (ids updated); the collector
+   runs with v35/v34/v33 (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
    scores: v33 should land ≥ 2500. If it does, the second final slot: either keep v32 (2392) or re-submit `submissions/v31_demand_g5_11.py`
    (v31 was 2411, same level — little difference), or better, a second cha22 build (e.g. `full_4_005`, a different lineage) once a gate
    shows it ≥ v33 vs v31/mirror — submitted BEFORE the final v33 copy if v33 must be the last one standing... remember only the
