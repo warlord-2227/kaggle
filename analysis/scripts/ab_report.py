@@ -9,7 +9,7 @@ def games(S):
     return rows
 def band(r): return "<2200" if r < 2200 else ("2200-2400" if r < 2400 else ("2400-2500" if r < 2500 else "2500+"))
 out = {}
-for S, name in ((56595044, "v35 cha22 g4-59"), (56559582, "v34 cha22 g4-17"), (56553451, "v33 cha22 g3-17")):
+for S, name in ((56619191, "v37 = v33 file (cha22 g3-17)"), (56619184, "v36 = v31 file (demand g5-11)"), (56595044, "v35 cha22 g4-59")):
     rows = games(S); out[name] = rows; time.sleep(8)
     if not rows: print(f"{name}: no games yet"); continue
     print(f"== {name}: {len(rows)} games, rating {rows[-1][3]:.0f}, path@20/40/60/80/100: {[round(rows[i][3]) for i in (19,39,59,79,99) if i < len(rows)]}")

@@ -1,4 +1,4 @@
-# Kaggriculture — session handoff (2026-09-27, 15:15 NZDT / 02:15 UTC)
+# Kaggriculture — session handoff (2026-09-28, 10:00 NZDT / 09-27 21:00 UTC)
 
 Read this first; `HANDOFF_LOG.md` is the full chronological log (2026-09-22 → 09-25) with every measurement.
 Competition: https://www.kaggle.com/competitions/kaggriculture (2-player farming sim, 720 turns, most coins wins).
@@ -21,8 +21,10 @@ PR #2 → main: https://github.com/warlord-2227/kaggle/pull/2 (last commit `4442
 
 | sub | file | what | live now | note |
 |---|---|---|---|---|
-| **v35** 56595044 | `submissions/v35_cha22_g4_59.py` | **cha22 base + run-4 gen-59 constants** (genome `experiments/v35_cha22_genome.json`) | submitted 09-27 15:11 NZDT (02:11 UTC) | **active** |
-| **v34** 56559582 | `submissions/v34_cha22_g4_17.py` | cha22 base + run-4 gen-17 constants (genome `experiments/v34_cha22_genome.json`) | 1796 @ 121 (107-14, still in low matchmaking) | **active** |
+| **v36** 56619184 | `submissions/v31_demand_g5_11.py` (byte-identical re-submission of v31) | demand tape + run-5 constants | submitted 09-28 09:54 NZDT (09-27 20:54 UTC) | **active, FINAL** |
+| **v37** 56619191 | `submissions/v33_cha22_g3_17.py` (byte-identical re-submission of v33) | cha22 + run-3 gen-17 constants | submitted 09-28 09:55 NZDT (20:55 UTC) | **active, FINAL** |
+| v35 56595044 | `submissions/v35_cha22_g4_59.py` | cha22 + run-4 gen-59 | ~2168 @ 124 (65-35 vs <2200, 13-10 vs 2200–2400) — weaker live than v33 | retired |
+| v34 56559582 | `submissions/v34_cha22_g4_17.py` | cha22 + run-4 gen-17 | 1937 @ 192 (158-34), climbing slowly | retired |
 | v33 56553451 | `submissions/v33_cha22_g3_17.py` | cha22 base + run-3 gen-17 constants | plateau 2308 @ 209 (65-41 vs 2200–2400, 3-5 vs 2400+) | retired by v35 |
 | v32 56515072 | `submissions/v32_demand_g6_29.py` | demand-preserving + run-6 constants | 2367 @ 202 | retired by v34 |
 | v31 56508691 | `submissions/v31_demand_g5_11.py` | demand-preserving + run-5 constants | 2411 @ ~200 (peak 2526; 28-40 vs 2500+) | retired by v33; re-submit it if v33 disappoints |
@@ -33,7 +35,9 @@ PR #2 → main: https://github.com/warlord-2227/kaggle/pull/2 (last commit `4442
 
 Same-field A/B at game 60: v31 2498 / v30 2194 / v29 (base) 2088 → the constants search moved the ladder +300–400 over the
 unmodified file; v32 vs v31 was inside the noise (2383 vs 2498 @60). v31/v32 both settled at **~2400** (their 50% band). Bronze line
-≈ 2450; 3000+ needs a different species (see §5). 4 submission slots left in the current UTC day (resets 13:00 NZDT). **Active pair = v34 + v35, both run-4 cha22 builds.**
+≈ 2450; 3000+ needs a different species (see §5). 2 submission slots left in the current UTC day (resets 13:00 NZDT). **Active pair = v36 (v31's file) + v37 (v33's file)** — user
+ decision 09-28 09:50: the two highest measured live levels (v31 2411, v33 2305 same-field-ish), two lineages as a hedge; the
+ run-4 builds beat our own builds offline but settled lower live (arms-race trap). **No further submissions planned.**
 
 ## 3. The ladder, as measured
 
@@ -87,6 +91,16 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
   +388 on the 4 no-yarn games but 2 wins flipped to losses**, yarn games identical (no cuts). Net: ≈ +200/game, win-rate neutral or
   worse → not worth a slot. Lesson: the tape's fixed plan cannot be trimmed piecemeal; only a different plan (tomatoes where a
   pizza shop / farmers' market exists: +6k gap in 36/39 towns; geese for egg shops) moves the needle, and that is executor work.
+
+- **09-27 21:50 NZDT — the field is changing before the lock.** New private submissions (ids 5658xxxx–5659xxxx, created 09-26/27) beat
+  every copy by 8–22k: e.g. sub 56597625 (created 09-27 04:26 UTC) 53-7, mean margin +20k, rated 2797 after 60 games; 56583280
+  120-7 +12.7k. Code tab unchanged (no new public file) → they are the unpublished adaptive agents arriving. v35's classified games
+  (`analysis/scripts/live_classify.py 56595044 1700`): vs copies **41-15 (73%), +0.8–1.1k**; vs the 10 non-copies 3-7, −7…−10k
+  (their farms: 20–29 tomato tiles at d20, strawberries wound down, some open with a cow). Leaderboard 21:40: 49 teams ≥ 2718, top
+  3107; our team (iwa_hueai) rank 918 at 2166 = v35's climbing rating (team score = max of the active pair; v33 was 2305).
+- Second-slot question (pending user): keep v34 (offline-best cha22 build, live level unknown, 1908 @147) or re-submit
+  `submissions/v31_demand_g5_11.py` (settled 2411 on the 09-25 field; v32 2362 vs v33 2305 same-period → demand lineage ≈ cha22
+  lineage live, ±50). Only the two best true levels matter (post-lock BT); climb time does not.
 
 ## 4. Current work: constants search on the cha22 base → v33
 
@@ -216,8 +230,8 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
 
 ## 8. Next steps, in order
 
-1. **Watch v34 (56559582) and v35 (56595044) settle**: `.venv/bin/python analysis/scripts/ab_report.py` (ids updated); the collector
-   runs with v35/v34/v33 (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
+1. **Watch v36 (56619184) and v37 (56619191) climb** (they start at 600; expect ~1.5–2 days to their bands): `.venv/bin/python
+   analysis/scripts/ab_report.py` (ids updated); the collector runs with v37/v36/v35/v34 (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
    scores: v33 should land ≥ 2500. If it does, the second final slot: either keep v32 (2392) or re-submit `submissions/v31_demand_g5_11.py`
    (v31 was 2411, same level — little difference), or better, a second cha22 build (e.g. `full_4_005`, a different lineage) once a gate
    shows it ≥ v33 vs v31/mirror — submitted BEFORE the final v33 copy if v33 must be the last one standing... remember only the
