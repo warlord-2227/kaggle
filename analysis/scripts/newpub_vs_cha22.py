@@ -5,7 +5,7 @@ os.environ["PYTHONWARNINGS"] = "ignore"; os.environ["CHASSIS"] = "cha22"
 ROOT = "/home/iwa/working/kaggle"; sys.path.insert(0, ROOT); sys.path.insert(0, ROOT + "/eval"); sys.path.insert(0, ROOT + "/experiments")
 from concurrent.futures import ProcessPoolExecutor
 NEW = {n: f"{ROOT}/refagents/public/{f}" for n, f in (("v34", "ahmed_v34.py"), ("v41", "ahmed_v41.py"), ("me53e", "masterengine_v53e_guru.py"),
-       ("marketshock", "marketshock_m1_leoprovorov.py"), ("v43", "arsgorynich_v43.py"), ("herdsafe3", "arsgorynich_herdsafe_v3.py"))}
+       ("marketshock", "marketshock_m1_leoprovorov.py"), ("v43", "arsgorynich_v43.py"), ("herdsafe3", "arsgorynich_herdsafe_v3.py"), ("me4", "masterengine_v4_guru.py"))}
 CHA = ROOT + "/refagents/public/cha22.py"
 ENTRY = {"marketshock": "agent"}   # override of the last-callable rule (its last callable is a patch factory -> 3,000 coins)
 def load(path, entry=None):

@@ -28,3 +28,8 @@ v41 12-0 +6.5k, me53e 12-0 +6.5k, v43 12-0 +5.7k, herdsafe3 10-2 +2.3k. marketsh
 nothing (3,000 coins); see below for its `agent` entry. cha22 remains the base.
 marketshock via `module.agent` (the wrapped stack): cha22 11-1 +3.2k (12 seeds). Closest relatives to cha22 are herdsafe3 (+2.3k) and
 marketshock (+3.2k) → candidates for extra gate opponents.
+
+Added 2026-09-28 15:00: masterengine_v4_guru.py = guruprasaathas111/kaggriculture-top-2-master-engine-v4 (Apache-2.0; identical file also in
+leoprovorov/2965-master-engine and haodou092/kaggriculture-harvest-ledger; packed as a b85/zlib literal). 10,137 lines, 'Pipe-16 HybridOpening'
++ cha22 lineage (67% shared lines) + a chain of fixed-sell steps; entry = last callable `step1009_step1008_fortyfirst_final_fixedsell_closure_agent`.
+Measured: vs raw cha22 7-5 (12 seeds, one seat); vs v33 genome 22-10 and vs v31 genome 22-10 (16 seeds × both seats). Submitted byte-exact as v38.

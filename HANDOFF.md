@@ -1,4 +1,4 @@
-# Kaggriculture — session handoff (2026-09-28, 10:00 NZDT / 09-27 21:00 UTC)
+# Kaggriculture — session handoff (2026-09-28, 15:10 NZDT / 02:10 UTC)
 
 Read this first; `HANDOFF_LOG.md` is the full chronological log (2026-09-22 → 09-25) with every measurement.
 Competition: https://www.kaggle.com/competitions/kaggriculture (2-player farming sim, 720 turns, most coins wins).
@@ -21,8 +21,10 @@ PR #2 → main: https://github.com/warlord-2227/kaggle/pull/2 (last commit `4442
 
 | sub | file | what | live now | note |
 |---|---|---|---|---|
-| **v36** 56619184 | `submissions/v31_demand_g5_11.py` (byte-identical re-submission of v31) | demand tape + run-5 constants | submitted 09-28 09:54 NZDT (09-27 20:54 UTC) | **active, FINAL** |
-| **v37** 56619191 | `submissions/v33_cha22_g3_17.py` (byte-identical re-submission of v33) | cha22 + run-3 gen-17 constants | submitted 09-28 09:55 NZDT (20:55 UTC) | **active, FINAL** |
+| **v38** 56625857 | `submissions/v38_masterengine_v4.py` = byte-exact public **Master Engine V4** (guruprasaathas111, Apache-2.0, 10,137 lines, entry `step1009_…_closure_agent`) | new public frontier file; beats our v33 AND v31 builds 22-10 both seats; its copies flood the swamp | submitted 09-28 15:01 NZDT (02:01 UTC) | **active, FINAL** |
+| **v39** 56625863 | `submissions/v31_demand_g5_11.py` (re-submission of v31) | demand tape + run-5 constants | submitted 09-28 15:01 NZDT | **active, FINAL** |
+| v36 56619184 | v31 file | | 60 games 51-9 @1565 when retired | retired by v38 |
+| v37 56619191 | v33 file | | 78 games 47-31 @1977: only 35% vs 2000–2200 copies now (28/31 losses to subs created since 09-27) | retired by v39 |
 | v35 56595044 | `submissions/v35_cha22_g4_59.py` | cha22 + run-4 gen-59 | ~2168 @ 124 (65-35 vs <2200, 13-10 vs 2200–2400) — weaker live than v33 | retired |
 | v34 56559582 | `submissions/v34_cha22_g4_17.py` | cha22 + run-4 gen-17 | 1937 @ 192 (158-34), climbing slowly | retired |
 | v33 56553451 | `submissions/v33_cha22_g3_17.py` | cha22 base + run-3 gen-17 constants | plateau 2308 @ 209 (65-41 vs 2200–2400, 3-5 vs 2400+) | retired by v35 |
@@ -35,9 +37,12 @@ PR #2 → main: https://github.com/warlord-2227/kaggle/pull/2 (last commit `4442
 
 Same-field A/B at game 60: v31 2498 / v30 2194 / v29 (base) 2088 → the constants search moved the ladder +300–400 over the
 unmodified file; v32 vs v31 was inside the noise (2383 vs 2498 @60). v31/v32 both settled at **~2400** (their 50% band). Bronze line
-≈ 2450; 3000+ needs a different species (see §5). 2 submission slots left in the current UTC day (resets 13:00 NZDT). **Active pair = v36 (v31's file) + v37 (v33's file)** — user
- decision 09-28 09:50: the two highest measured live levels (v31 2411, v33 2305 same-field-ish), two lineages as a hedge; the
- run-4 builds beat our own builds offline but settled lower live (arms-race trap). **No further submissions planned.**
+≈ 2450; 3000+ needs a different species (see §5). 3 submission slots left in the current UTC day (resets 13:00 NZDT). **Active pair = v38 (Master Engine V4, public) + v39 (v31's
+ file).** 09-28 15:00: a new public frontier appeared on 09-27 (notebooks `guruprasaathas111/kaggriculture-top-2-master-engine-v4`,
+ `leoprovorov/2965-master-engine`, `haodou092/kaggriculture-harvest-ledger` — identical 10,137-line file, notebook 'best score
+ 2784.6'); its opening signature (BUY 8 / SELL 3) was on 17/70 of v37's opponents and v37 had dropped to 35% vs 2000–2200 copies.
+ Offline (`analysis/scripts/pubfile_vs_self.py`, 16 seeds × both seats): ME4 beats the v33 genome 22-10 and the v31 genome 22-10;
+ vs raw cha22 7-5. Adopted byte-exact per the standing rule (§8.2). Copy in `refagents/public/masterengine_v4_guru.py`.
 
 ## 3. The ladder, as measured
 
@@ -230,8 +235,8 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
 
 ## 8. Next steps, in order
 
-1. **Watch v36 (56619184) and v37 (56619191) climb** (they start at 600; expect ~1.5–2 days to their bands): `.venv/bin/python
-   analysis/scripts/ab_report.py` (ids updated); the collector runs with v37/v36/v35/v34 (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
+1. **Watch v38 (56625857) and v39 (56625863) climb** (from 600; ~1.5–2 days to their bands): `.venv/bin/python
+   analysis/scripts/ab_report.py` (ids updated); the collector runs with v39/v38/v37/v36 (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
    scores: v33 should land ≥ 2500. If it does, the second final slot: either keep v32 (2392) or re-submit `submissions/v31_demand_g5_11.py`
    (v31 was 2411, same level — little difference), or better, a second cha22 build (e.g. `full_4_005`, a different lineage) once a gate
    shows it ≥ v33 vs v31/mirror — submitted BEFORE the final v33 copy if v33 must be the last one standing... remember only the
