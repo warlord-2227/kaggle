@@ -1,4 +1,4 @@
-# Kaggriculture — session handoff (2026-09-28, 15:10 NZDT / 02:10 UTC)
+# Kaggriculture — session handoff (2026-10-01, 12:30 NZDT / 09-30 23:30 UTC — 30 min before the lock)
 
 Read this first; `HANDOFF_LOG.md` is the full chronological log (2026-09-22 → 09-25) with every measurement.
 Competition: https://www.kaggle.com/competitions/kaggriculture (2-player farming sim, 720 turns, most coins wins).
@@ -236,7 +236,14 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
 ## 8. Next steps, in order
 
 1. **Watch v38 (56625857) and v39 (56625863) climb** (from 600; ~1.5–2 days to their bands): `.venv/bin/python
-   analysis/scripts/ab_report.py` (ids updated); the collector runs with v39/v38/v37/v36 (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
+   analysis/scripts/ab_report.py` (ids updated); the collector runs with v39/v38/v37/v36
+   09-28 20:30 NZDT: v38 (ME4) 51-14 @1648 after 65 games; v39 (v31 file) 49-32 @1768 after 81 (the demand lineage now loses
+   ~40% of coin flips in the low band; v37/v33 file was 48-31 @1981 when retired). Team score = max(active) → v38 decides; slot 2
+   only matters if it can beat ME4's level, and no file we have does (all our builds lose 10-22 to ME4). Nothing further to submit.
+   09-29 10:10 NZDT: v38 (ME4) 68-24 @1681 after 95 games but its last 25 are 14-11: exact 0-margin ties vs ME4 copies, wins of
+   +0.2–2.7k vs older copies, and −7k…−29k losses to brand-new elite subs → its level in the deadline-week field is ~1700–1800, not
+   the 2784 its notebook once reached. v39 (v31 file) 63-60 @1719 and falling. The whole copy population deflated as the elite
+   agents arrived; the final BT (2 weeks post-lock) will rank the copies below every real agent. Nothing to change. (`collect_episodes.log` in the 1c73f37a scratchpad; kill it by pid only — a name pattern kills your shell). Expectation from the gate and the public copies' live
    scores: v33 should land ≥ 2500. If it does, the second final slot: either keep v32 (2392) or re-submit `submissions/v31_demand_g5_11.py`
    (v31 was 2411, same level — little difference), or better, a second cha22 build (e.g. `full_4_005`, a different lineage) once a gate
    shows it ≥ v33 vs v31/mirror — submitted BEFORE the final v33 copy if v33 must be the last one standing... remember only the
@@ -246,6 +253,13 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
    within days). `scratchpad/cha22_strength.py` / `newpub_test.py` are the templates for measuring a new file.
 3. Re-run `live26_classify.py`-style loss profiles on v31/v32's latest games if their ratings drift.
 4. Stop searching by 09-29 12:00 local; make sure the two files you want are the two LAST submitted before 09-30 23:59 UTC.
+
+## 8b. Closing numbers at the lock (10-01 12:30 NZDT)
+- Final pair: **v38** = Master Engine V4 byte-exact (sub 56625857): 217 games, 108-78, rating **1643**. **v39** = v31 file (sub 56625863):
+  223 games, 88-135, rating **1539**. Team score at lock ≈ 1643. Board when this line started (09-25): 2444.
+- Field deflation 09-26 → 09-30: every copy-based agent lost 600–700 points as the elite agents and the ME4 copies arrived (v33's file went
+  92% → 60% → 35% in the low band within three days). Our own churn (three pair changes in two days) discarded settled ratings on top.
+- Post-lock: games continue ~2 weeks; the final BT will place the copies below every real agent. Nothing further to do here.
 
 ## 9. Post-mortem (written 2026-09-27 20:30 NZDT, before the 10-01 lock) — why this line stopped at ~2500 and what 2800+ needs
 
