@@ -260,6 +260,9 @@ Scripts `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality}
 - Field deflation 09-26 → 09-30: every copy-based agent lost 600–700 points as the elite agents and the ME4 copies arrived (v33's file went
   92% → 60% → 35% in the low band within three days). Our own churn (three pair changes in two days) discarded settled ratings on top.
 - Post-lock: games continue ~2 weeks; the final BT will place the copies below every real agent. Nothing further to do here.
+- 10-07 14:00 NZDT (6 days post-lock, page says 8 days of evaluation left): v38 1600.3 after 508 games (192-168 in the low band),
+  v39 1487 after 511 (225-286). **Team iwa_hueai rank 1887 of 10,148** (public leaderboard CSV `kaggle competitions leaderboard
+  --download`). Top: 3179 / 3132 / 3025.
 
 ## 9. Post-mortem (written 2026-09-27 20:30 NZDT, before the 10-01 lock) — why this line stopped at ~2500 and what 2800+ needs
 
