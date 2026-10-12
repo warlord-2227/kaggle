@@ -313,6 +313,16 @@ The own line rated ~800 live.
    Target a consistent +3–5k margin over copies (the top-10 beat the 2900 band 17-7 by +5k); that is what an 80–90% win rate and
    2700+ look like.
 
+**What the winners did (rank 1 "M & M & P & Q", 3179; source https://github.com/msdsm/kaggriculture-solution, read 10-12).**
+Behaviour cloning from the top public replays → self-play PPO → inspect weaknesses → improve a C++ heuristic/search planner →
+generate targeted demonstrations (tomato-heavy / skewed shop draws) → BC again → PPO again. 10.2M-parameter 12-block Transformer over
+264 tokens (farm cells, units, market, an opponent-inventory estimate); ~8.3M self-play games / 11.9B env steps on a multi-host GPU
+cluster with a Rust batched engine; rule-based action repair (collisions, seed budgets, shed overflow sales ranked by price vs base,
+end-game liquidation) and a final-day C++ search. Agent B is the neural policy end to end. The forum note "RL reaches silver at best
+(rank 28, 300k games)" that this project used to dismiss RL was a 30×-smaller attempt — and rank 28 of 10,148 would itself have been
+far better than this line's 1887. The misjudgement: treating "silver" as failure and the copy route as safer, instead of starting
+BC+PPO on day one with the byte-identical Rust simulator that was already in the scratchpad.
+
 **What to reuse.** `analysis/scripts/{income_gap,cash_ledger,demand_vs_supply,sale_quality,wool_gap,labour_audit,idle_structure}.py`
 (replay analytics), `eval/chassis_check.py` + `analysis/scripts/genome_h2h.py` + `verify_build.py` (gate/verify), `refagents/public/`
 (13 public agents, last-callable rule), `replays/{top,band2900,live_*}` (the field), the engine notes in §3b.
